@@ -24,10 +24,10 @@ repository               : "academicpages/academicpages.github.io"
 author:
   # Biographic information
   avatar           : "profile.png"
-  name             : "Your Sidebar Name"
+  name             : "Heng Zhang (张恒)"
   pronouns         : # example: "she/her"  
-  bio              : "Short biography for the left-hand sidebar"
-  location         : "Earth"
+  bio              : "A graduate student of South China Normal University. Focusing on Graph Representation Learning, LLMs, Agents."
+  location         : "Guangzhou, Guangdong, China"
   employer         : "Red Brick University"
   uri              : # URL
   email            : "none@example.org" 
