@@ -25,12 +25,12 @@ author:
   # Biographic information
   avatar           : "profile.png"
   name             : "Heng Zhang (张恒)"
-  pronouns         : # example: "she/her"  
+  # pronouns         : # example: "she/her"  
   bio              : "A graduate student of South China Normal University. Focusing on Graph Representation Learning, LLMs, Agents."
   location         : "Guangzhou, Guangdong, China"
-  employer         : "Red Brick University"
-  uri              : # URL
-  email            : "none@example.org" 
+  # employer         : "Red Brick University"
+  # uri              : # URL
+  email            : "614288106@qq.com" 
 
   # Academic websites
   academia         : # URL
