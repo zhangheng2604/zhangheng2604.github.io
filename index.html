@@ -336,11 +336,7 @@
     <header class="topbar">
       <a class="wordmark" href="index.html" aria-label="Heng Zhang home">HZ</a>
       <nav class="primary-nav" aria-label="Primary navigation">
-        <a href="#research">Research</a>
-        <a href="#publications">Publications</a>
-        <a href="blog/">Blog</a>
-        <a href="https://github.com/zhangheng2604" target="_blank" rel="noreferrer">GitHub</a>
-        <a class="language-link" href="zh/" lang="zh-CN">中文</a>
+        <a class="blog-nav-link" href="blog/"><span aria-hidden="true">📝</span> Blog</a>
       </nav>
     </header>
     <main class="site-shell">
@@ -365,14 +361,6 @@
             <span aria-hidden="true">✉️</span>
             2024025450@m.scnu.edu.cn
           </a>
-          <a href="https://github.com/zhangheng2604" target="_blank" rel="noreferrer">
-            <span aria-hidden="true">↗</span>
-            GitHub
-          </a>
-          <a href="blog/">
-            <span aria-hidden="true">✎</span>
-            Research Blog
-          </a>
         </nav>
       </aside>
 
@@ -395,89 +383,76 @@
         </section>
 
         <section id="research" aria-labelledby="research-title">
-          <div class="section-kicker">Research overview</div>
-          <h2 id="research-title" class="research-heading">
-            Three questions organize my research.
-          </h2>
+          <h2 id="research-title" class="section-heading overview-heading">🔬 Research Overview</h2>
           <p class="research-intro">
-            I study how agents learn over long horizons, how groups of agents
-            coordinate, and how foundation models reason faithfully with
-            structured evidence.
+            My research focuses on building capable agents for complex and
+            collaborative tasks—studying how agents communicate, reason
+            faithfully with structured evidence, and improve through
+            long-horizon interaction.
           </p>
 
           <div class="research-map" aria-label="Research overview map">
-            <div class="map-origin">
-              <span>Research agenda</span>
-              <strong>Capable agents for complex and collaborative tasks</strong>
-            </div>
-            <div class="map-branches">
-              <article class="research-branch">
-                <span class="branch-number">01</span>
-                <p class="branch-status">Established line</p>
-                <h3>How should multiple agents communicate and collaborate?</h3>
-                <p>
-                  Learning communication topologies, decomposing knowledge, and
-                  coordinating reliable multimodal collaboration.
-                </p>
-                <div class="topic-row" aria-label="Subtopics">
-                  <span>Topology</span><span>Knowledge sharing</span><span>Debate</span>
+            <article class="research-lane research-lane--blue">
+              <h3 class="question-node"><span>Q1</span>How should multiple agents communicate and collaborate?</h3>
+              <div class="research-clusters">
+                <div class="research-cluster">
+                  <h4>Communication Topology</h4>
+                  <div class="map-paper-links">
+                    <a href="#pub-hyperagent">🕸️ HyperAgent <small>AAMAS ’26</small></a>
+                    <a href="#pub-evohyper">🧬 EvoHyper <small>ACL ’26</small></a>
+                    <a href="#pub-hyperbalance">⚖️ HyperBalance <small>ACM MM ’26</small></a>
+                  </div>
                 </div>
-                <div class="map-paper-links">
-                  <a href="papers/hyperagent.pdf">HyperAgent</a>
-                  <a href="papers/evohyper.pdf">EvoHyper</a>
-                  <a href="papers/hyperbalance.pdf">HyperBalance</a>
-                  <a href="papers/d3mas.pdf">D3MAS</a>
+                <div class="research-cluster">
+                  <h4>Knowledge Sharing &amp; Debate</h4>
+                  <div class="map-paper-links">
+                    <a href="#pub-d3mas">🧩 D3MAS <small>AAMAS ’26</small></a>
+                    <a href="#pub-visual-geolocation-debate">🌍 Visual Geo-Localization Debate <small>ICME ’26</small></a>
+                  </div>
                 </div>
-              </article>
+              </div>
+            </article>
 
-              <article class="research-branch">
-                <span class="branch-number">02</span>
-                <p class="branch-status">Established line</p>
-                <h3>How can models generalize and reason faithfully?</h3>
-                <p>
-                  Using structural priors and evidence-aware learning across
-                  graphs, domains, languages, and multimodal inputs.
-                </p>
-                <div class="topic-row" aria-label="Subtopics">
-                  <span>Generalization</span><span>Graphs</span><span>Evidence</span>
+            <article class="research-lane research-lane--green">
+              <h3 class="question-node"><span>Q2</span>How can models generalize and reason faithfully?</h3>
+              <div class="research-clusters">
+                <div class="research-cluster">
+                  <h4>Faithful Graph Inference</h4>
+                  <div class="map-paper-links">
+                    <a href="#pub-h4g">🔍 H4G <small>SIGKDD ’26</small></a>
+                    <a href="#pub-g2rammar">🧭 G²rammar <small>DASFAA ’26</small></a>
+                    <a href="#pub-cross-domain-fm">🔗 Cross-domain FM <small>DASFAA ’26</small></a>
+                  </div>
                 </div>
-                <div class="map-paper-links">
-                  <a href="papers/h4g.pdf">H4G</a>
-                  <a href="papers/g2rammar.pdf">G²rammar</a>
-                  <a href="papers/mitigating-generic-token-dominance.pdf">Cross-domain FM</a>
+                <div class="research-cluster">
+                  <h4>Multimodal Evidence</h4>
+                  <div class="map-paper-links">
+                    <a href="#pub-evidence-experts">👁️ Evidence-Prioritized Experts <small>ICMR ’26</small></a>
+                  </div>
                 </div>
-              </article>
+              </div>
+            </article>
 
-              <article class="research-branch research-branch--ongoing">
-                <span class="branch-number">03</span>
-                <p class="branch-status">Ongoing frontier</p>
-                <h3>How can agents improve through long-horizon interaction?</h3>
-                <p>
-                  Studying reinforcement learning, credit assignment, world
-                  models, planning, and continual self-improvement.
-                </p>
-                <div class="topic-row" aria-label="Subtopics">
-                  <span>Agent RL</span><span>World models</span><span>Planning</span>
+            <article class="research-lane research-lane--amber">
+              <h3 class="question-node"><span>Q3</span>How can agents improve through long-horizon interaction?</h3>
+              <div class="research-clusters">
+                <div class="research-cluster">
+                  <h4>World Models &amp; Generation</h4>
+                  <div class="map-paper-links">
+                    <a href="#pub-fossilwriter">🪨 FossilWriter <small>IJCAI ’26</small></a>
+                  </div>
                 </div>
-                <div class="map-paper-links">
-                  <a href="papers/fossilwriter.pdf">FossilWriter</a>
-                  <a href="blog/2026/08/research-agenda/">Research agenda</a>
-                </div>
-              </article>
-            </div>
+              </div>
+            </article>
           </div>
+        </section>
 
-          <aside class="blog-promo" aria-label="Research blog">
-            <div>
-              <p class="blog-promo-label">Writing &amp; field notes</p>
-              <h3>Ideas that sit between papers.</h3>
-              <p>
-                Paper collisions, research tutorials, open questions, and notes
-                from building long-horizon and collaborative agents.
-              </p>
-            </div>
-            <a class="blog-button" href="blog/">Read the blog <span aria-hidden="true">↗</span></a>
-          </aside>
+        <section class="blog-glance" aria-labelledby="blog-glance-title">
+          <h2 id="blog-glance-title" class="section-heading">📝 Blogs</h2>
+          <ul>
+            <li><a href="blog/2026/08/research-agenda/">Three questions behind my research on learning and collaboration</a></li>
+            <li>More blogs can be found <a href="blog/">here</a>.</li>
+          </ul>
         </section>
 
         <section aria-labelledby="news">
@@ -525,7 +500,7 @@
 
           <h3>Selected Publications</h3>
           <ol class="publication-list">
-            <li class="paper-item">
+            <li class="paper-item" id="pub-hyperbalance">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >HyperBalance: Hypergraph-based Topology Optimization for
@@ -552,7 +527,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-fossilwriter">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >FossilWriter: Learning Hypergraph World Models with Latent
@@ -578,7 +553,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-h4g">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >H4G: Unlocking Faithful Inference for Zero-Shot Graph
@@ -598,7 +573,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-visual-geolocation-debate">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >Formalizing Heterogeneous Interaction Modeling for
@@ -626,7 +601,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-evohyper">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >EvoHyper: Evolving Hypergraph Topologies for Unified
@@ -651,7 +626,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-evidence-experts">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >Hyperbolic and Evidence-Prioritized Experts for Large
@@ -679,7 +654,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-d3mas">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >D3MAS: Decompose, Deduce, and Distribute for Enhanced
@@ -702,7 +677,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-hyperagent">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >HyperAgent: Leveraging Hypergraphs for Topology Optimization
@@ -727,7 +702,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-g2rammar">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >G²rammar: Bilingual Grammar Modeling for Enhanced
@@ -752,7 +727,7 @@
               </div>
             </li>
 
-            <li class="paper-item">
+            <li class="paper-item" id="pub-cross-domain-fm">
               <p class="paper-title-row">
                 <span class="paper-title"
                   >Mitigating Generic Token Dominance in Cross-Domain Foundation
