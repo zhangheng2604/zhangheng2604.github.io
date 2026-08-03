@@ -312,6 +312,17 @@ a {
   line-height: 0.98;
 }
 
+.article-header--essay {
+  max-width: 900px;
+  padding: clamp(70px, 9vw, 112px) 0 54px;
+}
+
+.article-header--essay h1 {
+  max-width: 880px;
+  font-size: clamp(42px, 6vw, 66px);
+  line-height: 1.03;
+}
+
 .article-deck {
   max-width: 800px;
   margin: 0 0 30px;
@@ -387,8 +398,116 @@ a {
 }
 
 .article-body p,
-.article-body ul {
+.article-body ul,
+.article-body ol {
   margin: 0 0 1.35em;
+}
+
+.article-body--technical {
+  font-size: 18px;
+}
+
+.article-note {
+  margin: 2em 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: #3f4844;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.equation {
+  margin: 1.8em 0;
+  padding: 20px 22px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #222624;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.equation > span {
+  margin-left: 14px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.equation--stacked {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.equation--stacked > span {
+  margin: 0;
+  color: #222624;
+  font-size: 20px;
+}
+
+.table-wrap {
+  margin: 1.8em 0;
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.article-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.article-table th,
+.article-table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #e8e9e5;
+  text-align: right;
+}
+
+.article-table th:first-child,
+.article-table td:first-child {
+  text-align: left;
+}
+
+.article-table th {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.article-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.article-list {
+  padding-left: 1.25em;
+}
+
+.article-list li {
+  margin-bottom: 0.8em;
+  padding-left: 0.25em;
+}
+
+.article-references {
+  padding-left: 1.25em;
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.article-references li {
+  margin-bottom: 0.65em;
+  padding-left: 0.25em;
 }
 
 .article-body a {
@@ -482,6 +601,10 @@ a {
 
 .note-row a:hover h2 {
   color: var(--accent);
+}
+
+.note-row + .note-row {
+  border-top: 1px solid var(--line);
 }
 
 .note-meta {

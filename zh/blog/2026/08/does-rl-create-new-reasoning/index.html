@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>强化学习是否带来了新的推理能力？ · 张恒</title>
+    <meta name="description" content="从概率锐化、经验支持集与推理模式坍缩出发，讨论强化学习究竟改变了语言模型的什么。" />
+    <link rel="canonical" href="https://zhangheng2604.github.io/zh/blog/2026/08/does-rl-create-new-reasoning/" />
+    <link rel="alternate" hreflang="en" href="https://zhangheng2604.github.io/blog/2026/08/does-rl-create-new-reasoning/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://zhangheng2604.github.io/zh/blog/2026/08/does-rl-create-new-reasoning/" />
+    <meta property="og:title" content="强化学习是否带来了新的推理能力？" />
+    <meta property="og:description" content="四篇 ICML 2026 论文给出的互补证据。" />
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content="2026-08-03" />
+    <link rel="icon" href="../../../../../icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../../../../../assets/blog.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <nav class="blog-nav" aria-label="博客导航">
+        <a class="blog-brand" href="../../../">
+          <span class="brand-dot" aria-hidden="true"></span>
+          张恒 / 研究札记
+        </a>
+        <div class="blog-nav-links">
+          <a href="../../../../../">主页</a>
+          <a href="../../../../../#research">研究导览</a>
+          <a href="../../../../../blog/2026/08/does-rl-create-new-reasoning/" lang="en">English</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="article-shell">
+      <header class="article-header article-header--essay">
+        <p class="eyebrow">论文碰撞</p>
+        <h1>强化学习是否带来了新的推理能力？</h1>
+        <p class="article-deck">
+          四篇 ICML 2026 论文从概率锐化、受控探索和模式坍缩出发，
+          讨论强化学习究竟改变了语言模型的什么。
+        </p>
+        <div class="article-byline"><span>张恒</span><span>2026 年 8 月 3 日</span><span>约 9 分钟</span></div>
+      </header>
+      <hr class="article-rule" />
+
+      <div class="article-layout">
+        <aside class="article-toc" aria-label="本文目录">
+          <strong>本文目录</strong>
+          <a href="#question-zh">问题从哪里开始</a>
+          <a href="#sharpening-zh">概率锐化</a>
+          <a href="#typicality-zh">典型性偏差</a>
+          <a href="#geometry-zh">模式坍缩</a>
+          <a href="#support-zh">经验支持集</a>
+          <a href="#evaluation-zh">如何评测</a>
+        </aside>
+
+        <article class="article-body article-body--technical">
+          <h2 id="question-zh">问题从哪里开始</h2>
+          <p>
+            当一个语言模型经过强化学习后，数学题的 pass@1 明显提高，常见解释是模型学会了更强的推理。
+            另一种解释也成立。正确解法原本就在基座模型的长尾分布中，训练只是提高了它被采到的概率。
+          </p>
+          <p>
+            这两种机制会给出相似的榜单结果，却对应不同的能力变化。前者接近新能力的获得，
+            后者更像已有能力的调用效率提高。Power Sampling、SAGE、Verbalized Sampling 和 G²RPO
+            分别研究了这个问题的不同部分。把四篇工作放在一起，可以得到一个较清楚的分析框架。
+          </p>
+          <div class="article-note">
+            判断强化学习是否产生了新能力，不能只看准确率。还需要观察概率质量如何移动，
+            以及哪些推理模式在固定计算预算下变得可达。
+          </div>
+
+          <h2 id="sharpening-zh">1. 概率锐化可以恢复多少训练收益</h2>
+          <p>
+            Power Sampling 从基座模型对完整回答的概率出发。它把高概率轨迹进一步放大，
+            同时压低低概率轨迹。
+          </p>
+          <div class="equation" role="math" aria-label="p alpha of y given x equals p of y given x to the alpha divided by Z">
+            <i>p</i><sub>α</sub>(<i>y</i> | <i>x</i>) = <i>p</i>(<i>y</i> | <i>x</i>)<sup>α</sup> / <i>Z</i>
+            <span>α &gt; 1</span>
+          </div>
+          <p>
+            这种操作与简单降低 temperature 不同。temperature 在每个 token 上进行局部锐化。
+            Power distribution 对完整推理轨迹进行全局重加权，因此可以考虑开头选择对后续结果的影响。
+          </p>
+          <p>
+            论文提出了一种带前瞻估计的自回归近似。它不需要额外训练，也不依赖外部验证器。
+            在 Qwen2.5-7B 上，Power Sampling 在三个任务上恢复了相当一部分强化学习收益。
+          </p>
+          <div class="table-wrap" role="region" aria-label="Power Sampling 结果" tabindex="0">
+            <table class="article-table">
+              <thead><tr><th>方法</th><th>MATH500</th><th>HumanEval</th><th>GPQA</th></tr></thead>
+              <tbody>
+                <tr><td>基座模型</td><td>0.498</td><td>0.329</td><td>0.278</td></tr>
+                <tr><td>Power Sampling</td><td>0.708</td><td>0.756</td><td>0.349</td></tr>
+                <tr><td>GRPO</td><td>0.740</td><td>0.561</td><td>0.354</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            这些结果不能推出强化学习没有学习。较稳妥的结论是，在这些模型和任务上，
+            一部分可观测收益不要求出现全新的推理轨迹。重新排列基座分布已经能够恢复这些收益。
+          </p>
+
+          <h2 id="typicality-zh">2. 典型性偏差会压低正确的长尾答案</h2>
+          <p>
+            Verbalized Sampling 将视角转向偏好数据。人类标注者通常更偏爱熟悉、流畅和典型的回答。
+            当多个回答的实际质量接近时，这种偏好会继续放大参考分布中本来就常见的模式。
+          </p>
+          <p>
+            作者没有修改模型参数，而是改变提问方式。模型先列出若干候选及其概率，再从这个显式分布中采样。
+            在诗歌、故事、对话模拟和合成数据等任务上，这种方法恢复了更多样的输出，整体质量没有同步下降。
+          </p>
+          <p>
+            这项工作说明，默认回答中没有出现某个模式，并不足以证明模型没有表示它。
+            提问方式、偏好数据和解码方法都会影响最终可见的能力。
+          </p>
+
+          <h2 id="geometry-zh">3. GRPO 中的正确模式也会彼此竞争</h2>
+          <p>
+            G²RPO 将不同正确解法看作概率空间中的不同模式。论文的平均场分析表明，
+            标准 GRPO 会提高正确模式分布的集中度。
+          </p>
+          <div class="equation" role="math" aria-label="L sub y equals the squared L2 norm of y">
+            <i>L</i><sub>y</sub> = ||<i>y</i>||<sub>2</sub><sup>2</sup>
+          </div>
+          <p>
+            当这个量接近 1，概率质量会集中到单个正确解法族。token entropy 可能仍然不低，
+            表面文本也可能很多样，但真正的解题策略已经变窄。
+          </p>
+          <p>
+            G²RPO 给稀有正确模式加入与其概率倒数相关的 advantage bonus。
+            在 DeepSeek-R1-Distill-Qwen-7B 上，GRPO 将平均正确模式数从基座模型的 2.35 降到 1.97，
+            G²RPO 则提高到 6.40。AIME 2025 准确率也从 GRPO 的 46.7% 提升到 48.9%。
+          </p>
+          <p>
+            这些模式由 embedding 和 DBSCAN 聚类得到，因此绝对数量会受到编码器和聚类半径影响。
+            论文最可靠的证据是相对趋势。在固定代理指标下，GRPO 更集中，G²RPO 更分散，
+            而且多样性的提高没有带来准确率下降。
+          </p>
+
+          <h2 id="support-zh">4. 经验支持集扩张并不等于凭空创造能力</h2>
+          <p>
+            SAGE 关注 reverse KL 带来的稳定性与探索不足。标准目标会把训练策略锚定在参考模型附近，
+            这可以减少 reward hacking，也会持续压低参考模型中的稀有轨迹。
+          </p>
+          <div class="equation equation--stacked" role="math" aria-label="SAGE policy is proportional to q times the reference policy times exponential reward over beta">
+            <span>π<sup>*</sup>(<i>y</i> | <i>x</i>) ∝ π<sub>ref</sub>(<i>y</i> | <i>x</i>) exp(<i>r</i> / β)</span>
+            <span>π<sup>*</sup><sub>SAGE</sub>(<i>y</i> | <i>x</i>) ∝ <i>q</i>(<i>x</i>, <i>y</i>) π<sub>ref</sub>(<i>y</i> | <i>x</i>) exp(<i>r</i> / β)</span>
+          </div>
+          <p>
+            SAGE 用 guide function 调整锚点，并在高不确定性的推理分叉处加强探索。
+            原本概率非零但在有限 rollout 中几乎不可见的轨迹，因此有机会越过可见阈值。
+          </p>
+          <p>
+            论文扩展的是经验支持集。它没有创造参考策略中概率严格为零的理论支持。
+            这一边界很重要。SAGE 更适合被理解为提高长尾能力的可达性，而不是直接证明模型获得了全新能力。
+          </p>
+
+          <h2 id="evaluation-zh">5. 如何更完整地评测能力变化</h2>
+          <p>从四篇论文的共同问题出发，能力提升可以暂时分成三个层次。</p>
+          <ol class="article-list">
+            <li><strong>概率重排</strong>。正确模式已经存在，训练或推理时锐化提高了它的排名。</li>
+            <li><strong>可达性提高</strong>。模式在理论上存在，但在固定采样预算下很难出现。受控探索使它进入经验支持集。</li>
+            <li><strong>表示或算法扩张</strong>。模型获得了基座模型在合理计算预算下无法恢复的解题结构，并能迁移到新的任务分布。</li>
+          </ol>
+          <p>
+            第三个层次最接近日常所说的新推理能力，也最难验证。对 softmax 语言模型而言，
+            几乎所有有限 token 序列都可能具有非零概率。理论支持集本身过于宽泛，
+            因此能力判断需要同时限定采样次数、上下文长度和验证成本。
+          </p>
+          <p>较完整的评测至少需要报告以下四组结果。</p>
+          <ul class="article-list">
+            <li>pass@1 所表示的单次采样准确率</li>
+            <li>完整 pass@k 曲线所表示的覆盖率</li>
+            <li>语义或程序结构聚类后的解法族数量、熵与集中度</li>
+            <li>基座模型在更强采样方法和更大推理预算下的可恢复性，以及分布外迁移结果</li>
+          </ul>
+          <p>
+            如果 RL 模型的 pass@1 提高，但基座模型通过重采样就能追平，同时 RL 模型的 pass@k 和模式熵下降，
+            更合适的表述是训练提高了能力调用效率。只有当新的解法族在固定预算下稳定出现，
+            并且无法由基座模型通过推理时扩展恢复时，能力扩张的证据才更充分。
+          </p>
+
+          <h2 id="references-zh">参考论文</h2>
+          <ol class="article-references">
+            <li><a href="https://openreview.net/pdf?id=SVyjXhZlDe" target="_blank" rel="noopener">Scalable Power Sampling</a>，ICML 2026</li>
+            <li><a href="https://openreview.net/pdf?id=VzRUI5ZVkp" target="_blank" rel="noopener">SAGE</a>，ICML 2026</li>
+            <li><a href="https://openreview.net/pdf?id=zloIrd77G5" target="_blank" rel="noopener">Verbalized Sampling</a>，ICML 2026</li>
+            <li><a href="https://openreview.net/pdf?id=nAkHNBbg4p" target="_blank" rel="noopener">G²RPO</a>，ICML 2026</li>
+          </ol>
+        </article>
+      </div>
+    </main>
+
+    <footer class="blog-footer">
+      <span>© 2026 张恒</span>
+      <span><a href="mailto:2024025450@m.scnu.edu.cn">讨论本文</a> · <a href="../../../">全部文章</a></span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Does Reinforcement Learning Create New Reasoning Abilities? · Heng Zhang</title>
+    <meta name="description" content="Four ICML 2026 papers examine distribution sharpening, empirical support, and reasoning mode collapse." />
+    <link rel="canonical" href="https://zhangheng2604.github.io/blog/2026/08/does-rl-create-new-reasoning/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://zhangheng2604.github.io/zh/blog/2026/08/does-rl-create-new-reasoning/" />
+    <link rel="alternate" hreflang="en" href="https://zhangheng2604.github.io/blog/2026/08/does-rl-create-new-reasoning/" />
+    <meta property="og:title" content="Does Reinforcement Learning Create New Reasoning Abilities?" />
+    <meta property="og:description" content="Complementary evidence from four ICML 2026 papers." />
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content="2026-08-03" />
+    <link rel="icon" href="../../../../icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../../../../assets/blog.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <nav class="blog-nav" aria-label="Blog navigation">
+        <a class="blog-brand" href="../../../">
+          <span class="brand-dot" aria-hidden="true"></span>
+          Heng Zhang / Research Notes
+        </a>
+        <div class="blog-nav-links">
+          <a href="../../../../">Homepage</a>
+          <a href="../../../../#research">Research</a>
+          <a href="../../../../zh/blog/2026/08/does-rl-create-new-reasoning/" lang="zh-CN">中文</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="article-shell">
+      <header class="article-header article-header--essay">
+        <p class="eyebrow">Paper collision</p>
+        <h1>Does reinforcement learning create new reasoning abilities?</h1>
+        <p class="article-deck">
+          Four ICML 2026 papers study what reinforcement learning changes through
+          distribution sharpening, guided exploration, and mode collapse.
+        </p>
+        <div class="article-byline"><span>Heng Zhang</span><span>August 3, 2026</span><span>9 min read</span></div>
+      </header>
+      <hr class="article-rule" />
+
+      <div class="article-layout">
+        <aside class="article-toc" aria-label="On this page">
+          <strong>On this page</strong>
+          <a href="#question">Where the question begins</a>
+          <a href="#sharpening">Distribution sharpening</a>
+          <a href="#typicality">Typicality bias</a>
+          <a href="#geometry">Mode collapse</a>
+          <a href="#support">Empirical support</a>
+          <a href="#evaluation">How to evaluate change</a>
+        </aside>
+
+        <article class="article-body article-body--technical">
+          <h2 id="question">Where the question begins</h2>
+          <p>
+            A large increase in pass@1 after reinforcement learning is often described as stronger reasoning.
+            A second explanation is also possible. Correct solutions may already sit in the tail of the base model distribution,
+            while training mainly raises their sampling probability.
+          </p>
+          <p>
+            Both mechanisms can produce similar benchmark gains, but they describe different changes.
+            The first resembles the acquisition of a new ability. The second improves access to an existing ability.
+            Power Sampling, SAGE, Verbalized Sampling, and G²RPO examine different parts of this distinction.
+          </p>
+          <div class="article-note">
+            Accuracy alone cannot establish that reinforcement learning created a new ability.
+            It is also necessary to track where probability mass moved and which reasoning modes became reachable under a fixed compute budget.
+          </div>
+
+          <h2 id="sharpening">1. How much can distribution sharpening recover?</h2>
+          <p>
+            Power Sampling begins with the base model probability of a complete response.
+            It amplifies high probability trajectories and suppresses low probability trajectories.
+          </p>
+          <div class="equation" role="math" aria-label="p alpha of y given x equals p of y given x to the alpha divided by Z">
+            <i>p</i><sub>α</sub>(<i>y</i> | <i>x</i>) = <i>p</i>(<i>y</i> | <i>x</i>)<sup>α</sup> / <i>Z</i>
+            <span>α &gt; 1</span>
+          </div>
+          <p>
+            This operation is different from simply lowering the temperature.
+            Temperature sharpens local token probabilities. The power distribution reweights complete trajectories,
+            which allows early choices to be judged by their downstream consequences.
+          </p>
+          <p>
+            The paper introduces an autoregressive approximation with lookahead estimates.
+            It requires no extra training and no external verifier.
+            On Qwen2.5-7B, Power Sampling recovers a substantial part of the gains associated with reinforcement learning.
+          </p>
+          <div class="table-wrap" role="region" aria-label="Power Sampling results" tabindex="0">
+            <table class="article-table">
+              <thead><tr><th>Method</th><th>MATH500</th><th>HumanEval</th><th>GPQA</th></tr></thead>
+              <tbody>
+                <tr><td>Base model</td><td>0.498</td><td>0.329</td><td>0.278</td></tr>
+                <tr><td>Power Sampling</td><td>0.708</td><td>0.756</td><td>0.349</td></tr>
+                <tr><td>GRPO</td><td>0.740</td><td>0.561</td><td>0.354</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            These results do not show that reinforcement learning learns nothing.
+            A narrower conclusion is supported. In these settings, some observable gains do not require entirely new reasoning trajectories.
+            Reordering the base distribution is already sufficient to recover them.
+          </p>
+
+          <h2 id="typicality">2. Typicality bias can hide correct tail responses</h2>
+          <p>
+            Verbalized Sampling shifts attention to preference data.
+            Human annotators often prefer responses that are familiar, fluent, and typical.
+            When several answers have similar utility, this preference can further amplify modes that were already common in the reference distribution.
+          </p>
+          <p>
+            The proposed method does not update model parameters.
+            It asks the model to list several candidates with probabilities and then samples from that explicit distribution.
+            Across creative writing, dialogue simulation, and synthetic data tasks, the method recovers more diverse outputs without a corresponding loss in overall quality.
+          </p>
+          <p>
+            The absence of a mode from a default response is therefore weak evidence that the model does not represent it.
+            Prompt format, preference data, and decoding all influence which abilities become visible.
+          </p>
+
+          <h2 id="geometry">3. Correct modes can compete under GRPO</h2>
+          <p>
+            G²RPO treats different correct solution families as modes in a probability space.
+            Its mean field analysis shows that standard GRPO increases concentration within the distribution over correct modes.
+          </p>
+          <div class="equation" role="math" aria-label="L sub y equals the squared L2 norm of y">
+            <i>L</i><sub>y</sub> = ||<i>y</i>||<sub>2</sub><sup>2</sup>
+          </div>
+          <p>
+            As this quantity approaches 1, probability mass concentrates on one correct solution family.
+            Token entropy may remain high and the surface text may still vary, even though the underlying strategies have narrowed.
+          </p>
+          <p>
+            G²RPO adds an advantage bonus related to the inverse probability of a rare correct mode.
+            On DeepSeek-R1-Distill-Qwen-7B, GRPO reduces the average number of correct modes from 2.35 in the base model to 1.97.
+            G²RPO raises it to 6.40. AIME 2025 accuracy also rises from 46.7 percent under GRPO to 48.9 percent.
+          </p>
+          <p>
+            The modes are estimated with embeddings and DBSCAN, so absolute counts depend on the encoder and clustering radius.
+            The strongest evidence is the relative trend under a fixed proxy.
+            GRPO becomes more concentrated while G²RPO becomes more dispersed without losing accuracy.
+          </p>
+
+          <h2 id="support">4. Empirical support expansion is not ability creation</h2>
+          <p>
+            SAGE studies the tension between stability and exploration under reverse KL.
+            Anchoring the training policy to a reference model can reduce reward hacking, but it also suppresses rare trajectories from that reference model.
+          </p>
+          <div class="equation equation--stacked" role="math" aria-label="SAGE policy is proportional to q times the reference policy times exponential reward over beta">
+            <span>π<sup>*</sup>(<i>y</i> | <i>x</i>) ∝ π<sub>ref</sub>(<i>y</i> | <i>x</i>) exp(<i>r</i> / β)</span>
+            <span>π<sup>*</sup><sub>SAGE</sub>(<i>y</i> | <i>x</i>) ∝ <i>q</i>(<i>x</i>, <i>y</i>) π<sub>ref</sub>(<i>y</i> | <i>x</i>) exp(<i>r</i> / β)</span>
+          </div>
+          <p>
+            SAGE uses a guide function to reshape the anchor and encourages exploration near uncertain reasoning branches.
+            A trajectory with nonzero but extremely small probability can then cross the visibility threshold imposed by a finite rollout budget.
+          </p>
+          <p>
+            The method expands empirical support rather than theoretical support.
+            It cannot introduce trajectories that have zero probability under the reference policy.
+            SAGE is therefore better understood as improving access to tail abilities than as direct evidence of entirely new abilities.
+          </p>
+
+          <h2 id="evaluation">5. A fuller evaluation of ability change</h2>
+          <p>The four papers suggest a three level description of improvement.</p>
+          <ol class="article-list">
+            <li><strong>Probability reordering.</strong> A correct mode already exists and training or inference time sharpening improves its rank.</li>
+            <li><strong>Improved reachability.</strong> A mode exists but rarely appears under a fixed sampling budget. Guided exploration moves it into empirical support.</li>
+            <li><strong>Representational or algorithmic expansion.</strong> The model acquires a solution structure that the base model cannot recover under a reasonable compute budget and transfers it to new task distributions.</li>
+          </ol>
+          <p>
+            The third level is closest to what is usually meant by a new reasoning ability, and it is the hardest to establish.
+            Almost every finite token sequence can have nonzero probability under a softmax language model.
+            Meaningful claims therefore need a fixed budget for sampling, context, and verification.
+          </p>
+          <p>A useful evaluation should report at least four groups of measurements.</p>
+          <ul class="article-list">
+            <li>pass@1 for single sample accuracy</li>
+            <li>the full pass@k curve for coverage</li>
+            <li>solution family count, entropy, and concentration under semantic or structural clustering</li>
+            <li>recoverability from the base model under stronger sampling and larger inference budgets, followed by out of distribution transfer</li>
+          </ul>
+          <p>
+            If resampling lets the base model match an RL model while the RL model loses pass@k and mode entropy,
+            the evidence supports more efficient ability selection. Evidence for ability expansion becomes stronger only when new solution families
+            appear reliably under a fixed budget and cannot be recovered from the base model through inference scaling.
+          </p>
+
+          <h2 id="references">References</h2>
+          <ol class="article-references">
+            <li><a href="https://openreview.net/pdf?id=SVyjXhZlDe" target="_blank" rel="noopener">Scalable Power Sampling</a>, ICML 2026</li>
+            <li><a href="https://openreview.net/pdf?id=VzRUI5ZVkp" target="_blank" rel="noopener">SAGE</a>, ICML 2026</li>
+            <li><a href="https://openreview.net/pdf?id=zloIrd77G5" target="_blank" rel="noopener">Verbalized Sampling</a>, ICML 2026</li>
+            <li><a href="https://openreview.net/pdf?id=nAkHNBbg4p" target="_blank" rel="noopener">G²RPO</a>, ICML 2026</li>
+          </ol>
+        </article>
+      </div>
+    </main>
+
+    <footer class="blog-footer">
+      <span>© 2026 Heng Zhang.</span>
+      <span><a href="mailto:2024025450@m.scnu.edu.cn">Discuss this essay</a> · <a href="../../../">All posts</a></span>
+    </footer>
+  </body>
+</html>
