@@ -6,9 +6,18 @@
     <title>Heng Zhang</title>
     <meta
       name="description"
-      content="Heng Zhang is an M.Sc. student at South China Normal University, focusing on LLM agents, reinforcement learning, and graph learning."
+      content="Heng Zhang studies long-horizon agents, multi-agent collaboration, reinforcement learning, and structure-aware foundation models."
     />
+    <link rel="canonical" href="https://zhangheng2604.github.io/" />
+    <meta property="og:title" content="Heng Zhang — Research &amp; Writing" />
+    <meta
+      property="og:description"
+      content="Research on long-horizon agents, multi-agent collaboration, and faithful structured reasoning."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zhangheng2604.github.io/" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/site.css" />
     <style>
       :root {
         --ink: #44494f;
@@ -324,6 +333,16 @@
     </style>
   </head>
   <body>
+    <header class="topbar">
+      <a class="wordmark" href="index.html" aria-label="Heng Zhang home">HZ</a>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="#research">Research</a>
+        <a href="#publications">Publications</a>
+        <a href="blog/">Blog</a>
+        <a href="https://github.com/zhangheng2604" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="language-link" href="zh/" lang="zh-CN">中文</a>
+      </nav>
+    </header>
     <main class="site-shell">
       <aside class="sidebar" aria-label="Profile">
         <img class="headshot" src="head.jpg" alt="Heng Zhang" />
@@ -346,6 +365,14 @@
             <span aria-hidden="true">✉️</span>
             2024025450@m.scnu.edu.cn
           </a>
+          <a href="https://github.com/zhangheng2604" target="_blank" rel="noreferrer">
+            <span aria-hidden="true">↗</span>
+            GitHub
+          </a>
+          <a href="blog/">
+            <span aria-hidden="true">✎</span>
+            Research Blog
+          </a>
         </nav>
       </aside>
 
@@ -367,25 +394,90 @@
           </p>
         </section>
 
-        <section aria-labelledby="interests">
-          <h2 id="interests" class="section-heading">
-            🔍 Research Interests
+        <section id="research" aria-labelledby="research-title">
+          <div class="section-kicker">Research overview</div>
+          <h2 id="research-title" class="research-heading">
+            Three questions organize my research.
           </h2>
-          <ul class="interest-list">
-            <li>
-              <strong>LLM Agents:</strong> long-horizon task solving,
-              tool-based reasoning, planning, and collaboration.
-            </li>
-            <li>
-              <strong>Reinforcement Learning:</strong> interaction-based
-              training, long-horizon credit assignment, and stable agent
-              improvement.
-            </li>
-            <li>
-              <strong>Graph Learning:</strong> text-attributed graphs,
-              structured communication, and faithful inference.
-            </li>
-          </ul>
+          <p class="research-intro">
+            I study how agents learn over long horizons, how groups of agents
+            coordinate, and how foundation models reason faithfully with
+            structured evidence.
+          </p>
+
+          <div class="research-map" aria-label="Research overview map">
+            <div class="map-origin">
+              <span>Research agenda</span>
+              <strong>Capable agents for complex and collaborative tasks</strong>
+            </div>
+            <div class="map-branches">
+              <article class="research-branch">
+                <span class="branch-number">01</span>
+                <p class="branch-status">Established line</p>
+                <h3>How should multiple agents communicate and collaborate?</h3>
+                <p>
+                  Learning communication topologies, decomposing knowledge, and
+                  coordinating reliable multimodal collaboration.
+                </p>
+                <div class="topic-row" aria-label="Subtopics">
+                  <span>Topology</span><span>Knowledge sharing</span><span>Debate</span>
+                </div>
+                <div class="map-paper-links">
+                  <a href="papers/hyperagent.pdf">HyperAgent</a>
+                  <a href="papers/evohyper.pdf">EvoHyper</a>
+                  <a href="papers/hyperbalance.pdf">HyperBalance</a>
+                  <a href="papers/d3mas.pdf">D3MAS</a>
+                </div>
+              </article>
+
+              <article class="research-branch">
+                <span class="branch-number">02</span>
+                <p class="branch-status">Established line</p>
+                <h3>How can models generalize and reason faithfully?</h3>
+                <p>
+                  Using structural priors and evidence-aware learning across
+                  graphs, domains, languages, and multimodal inputs.
+                </p>
+                <div class="topic-row" aria-label="Subtopics">
+                  <span>Generalization</span><span>Graphs</span><span>Evidence</span>
+                </div>
+                <div class="map-paper-links">
+                  <a href="papers/h4g.pdf">H4G</a>
+                  <a href="papers/g2rammar.pdf">G²rammar</a>
+                  <a href="papers/mitigating-generic-token-dominance.pdf">Cross-domain FM</a>
+                </div>
+              </article>
+
+              <article class="research-branch research-branch--ongoing">
+                <span class="branch-number">03</span>
+                <p class="branch-status">Ongoing frontier</p>
+                <h3>How can agents improve through long-horizon interaction?</h3>
+                <p>
+                  Studying reinforcement learning, credit assignment, world
+                  models, planning, and continual self-improvement.
+                </p>
+                <div class="topic-row" aria-label="Subtopics">
+                  <span>Agent RL</span><span>World models</span><span>Planning</span>
+                </div>
+                <div class="map-paper-links">
+                  <a href="papers/fossilwriter.pdf">FossilWriter</a>
+                  <a href="blog/2026/08/research-agenda/">Research agenda</a>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <aside class="blog-promo" aria-label="Research blog">
+            <div>
+              <p class="blog-promo-label">Writing &amp; field notes</p>
+              <h3>Ideas that sit between papers.</h3>
+              <p>
+                Paper collisions, research tutorials, open questions, and notes
+                from building long-horizon and collaborative agents.
+              </p>
+            </div>
+            <a class="blog-button" href="blog/">Read the blog <span aria-hidden="true">↗</span></a>
+          </aside>
         </section>
 
         <section aria-labelledby="news">

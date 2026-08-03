@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Three Questions Behind My Research — Heng Zhang</title>
+    <meta
+      name="description"
+      content="A research map connecting multi-agent communication, faithful structured reasoning, and long-horizon agent learning."
+    />
+    <link rel="canonical" href="https://zhangheng2604.github.io/blog/2026/08/research-agenda/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://zhangheng2604.github.io/zh/blog/2026/08/research-agenda/" />
+    <link rel="alternate" hreflang="en" href="https://zhangheng2604.github.io/blog/2026/08/research-agenda/" />
+    <meta property="og:title" content="Three Questions Behind My Research" />
+    <meta property="og:description" content="A research map for learning, collaboration, and faithful reasoning." />
+    <meta property="og:type" content="article" />
+    <link rel="icon" href="../../../../icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../../../../assets/blog.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <nav class="blog-nav" aria-label="Blog navigation">
+        <a class="blog-brand" href="../../../">
+          <span class="brand-dot" aria-hidden="true"></span>
+          Heng Zhang / Research Notes
+        </a>
+        <div class="blog-nav-links">
+          <a href="../../../../">Homepage</a>
+          <a href="../../../../#research">Research</a>
+          <a href="../../../../zh/blog/2026/08/research-agenda/" lang="zh-CN">中文</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="article-shell">
+      <header class="article-header">
+        <p class="eyebrow">Research agenda</p>
+        <h1>Three questions behind my research on learning and collaboration</h1>
+        <p class="article-deck">
+          My work spans graph learning, multi-agent communication, and agent
+          reinforcement learning. These areas are connected by a common goal:
+          building capable agents for complex, long-horizon, and collaborative tasks.
+        </p>
+        <div class="article-byline">
+          <span>Heng Zhang</span><span>August 3, 2026</span><span>8 min read</span>
+        </div>
+      </header>
+      <hr class="article-rule" />
+
+      <div class="article-layout">
+        <aside class="article-toc" aria-label="On this page">
+          <strong>On this page</strong>
+          <a href="#map">One agenda, three questions</a>
+          <a href="#collaboration">Agent collaboration</a>
+          <a href="#faithful">Faithful reasoning</a>
+          <a href="#learning">Long-horizon learning</a>
+          <a href="#writing">Why write these notes</a>
+        </aside>
+
+        <article class="article-body">
+          <h2 id="map">One agenda, three questions</h2>
+          <p>
+            Research areas are often listed as nouns: agents, reinforcement
+            learning, graphs, multimodality. A list is useful for indexing a CV,
+            but it does not explain why the projects belong together. I find it
+            more useful to organize my work around questions.
+          </p>
+          <blockquote>
+            How can we build agents that learn over long horizons, coordinate
+            with others, and remain faithful to the evidence they use?
+          </blockquote>
+          <p>
+            This broad goal currently unfolds into three connected questions.
+            The first two describe established lines of work. The third is an
+            ongoing frontier that motivates my current interest in agent
+            reinforcement learning and post-training.
+          </p>
+
+          <h2 id="collaboration">1. How should multiple agents communicate and collaborate?</h2>
+          <div class="question-card">
+            <span>Question 01</span>
+            <strong>Which communication structure lets a group share the right information without paying for every possible connection?</strong>
+          </div>
+          <p>
+            Multi-agent systems are frequently implemented with a convenient
+            default: everyone can talk to everyone. But communication has a
+            topology, and that topology affects efficiency, reliability, and the
+            knowledge available to each participant.
+          </p>
+          <p>
+            My work on <a href="../../../../papers/hyperagent.pdf">HyperAgent</a>,
+            <a href="../../../../papers/evohyper.pdf">EvoHyper</a>, and
+            <a href="../../../../papers/hyperbalance.pdf">HyperBalance</a>
+            studies communication through hypergraph structure and topology
+            optimization. <a href="../../../../papers/d3mas.pdf">D3MAS</a>
+            approaches the same agenda from knowledge decomposition and
+            distribution: collaboration depends not only on who communicates,
+            but also on what information is produced and where it is sent.
+          </p>
+          <p>
+            The deeper research problem is therefore not simply “multi-agent
+            communication.” It is the joint design of structure, information,
+            and coordination under practical constraints.
+          </p>
+
+          <h2 id="faithful">2. How can models generalize and reason faithfully?</h2>
+          <div class="question-card">
+            <span>Question 02</span>
+            <strong>Which structural and evidential biases help a model transfer beyond the shortcuts of its training domain?</strong>
+          </div>
+          <p>
+            Before focusing on agent collaboration, I studied graph learning and
+            foundation models under domain shift. That work remains central to
+            the way I think about agents: an agent is only as reliable as the
+            representations and evidence on which its decisions are grounded.
+          </p>
+          <p>
+            <a href="../../../../papers/h4g.pdf">H4G</a> investigates faithful
+            zero-shot graph inference in hyperbolic space. G²rammar and our work
+            on <a href="../../../../papers/mitigating-generic-token-dominance.pdf">generic token dominance</a>
+            examine bilingual structure and cross-domain transfer for
+            text-attributed graphs. Related multimodal work studies how evidence
+            can be prioritized when large vision-language models combine
+            heterogeneous signals.
+          </p>
+          <p>
+            Across these projects, structure is not just an input format. It is
+            a way to state what should remain stable when surface distributions change.
+          </p>
+
+          <h2 id="learning">3. How can agents improve through long-horizon interaction?</h2>
+          <div class="question-card">
+            <span>Question 03 · Ongoing</span>
+            <strong>How should an agent assign credit, update its internal model, and improve when success depends on a long sequence of decisions?</strong>
+          </div>
+          <p>
+            Long-horizon tasks expose a gap between producing a plausible next
+            action and learning a robust strategy. Outcomes may arrive long
+            after the decisions that caused them. Plans must be revised as new
+            evidence appears, and collaboration makes the learning signal even
+            more distributed.
+          </p>
+          <p>
+            This is why I am increasingly interested in reinforcement learning
+            and post-training for agents: credit assignment, reward design,
+            planning, adaptation, and stable self-improvement. Our work on
+            <a href="../../../../papers/fossilwriter.pdf">FossilWriter</a>, which
+            learns a hypergraph world model with latent narratives, offers one
+            bridge toward this question, but the broader agenda is still open.
+          </p>
+
+          <h2 id="writing">Why write these notes?</h2>
+          <p>
+            Papers present a finished contribution. They rarely preserve the
+            conceptual bridges between projects, the alternatives that failed,
+            or the questions that were useful even when they did not become a
+            paper. This blog is a place for those intermediate artifacts.
+          </p>
+          <p>
+            Future posts will use three recurring formats: <em>Paper Collision</em>
+            for comparing apparently separate lines of work, technical tutorials
+            for unpacking core ideas, and field notes for shorter observations
+            from ongoing research. The goal is not to publish every unfinished
+            idea. It is to make the reasoning behind the research more explicit,
+            testable, and useful to others.
+          </p>
+        </article>
+      </div>
+    </main>
+
+    <footer class="blog-footer">
+      <span>© 2026 Heng Zhang.</span>
+      <span><a href="mailto:2024025450@m.scnu.edu.cn">Discuss this essay</a> · <a href="../../../">All posts</a></span>
+    </footer>
+  </body>
+</html>

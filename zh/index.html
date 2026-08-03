@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>张恒 — 研究与写作</title>
+    <meta
+      name="description"
+      content="张恒的个人研究主页，关注长程智能体、多智能体协作、强化学习与结构化可信推理。"
+    />
+    <link rel="canonical" href="https://zhangheng2604.github.io/zh/" />
+    <link rel="alternate" hreflang="en" href="https://zhangheng2604.github.io/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://zhangheng2604.github.io/zh/" />
+    <meta property="og:title" content="张恒 — 研究与写作" />
+    <meta property="og:description" content="关于长程智能体、协作智能与结构化可信推理的研究。" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../assets/site.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="./" aria-label="张恒主页">HZ</a>
+      <nav class="primary-nav" aria-label="主导航">
+        <a href="#research">研究导览</a>
+        <a href="#publications">论文</a>
+        <a href="blog/">博客</a>
+        <a href="https://github.com/zhangheng2604" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="language-link" href="../" lang="en">English</a>
+      </nav>
+    </header>
+
+    <main class="site-shell">
+      <aside class="sidebar" aria-label="个人信息">
+        <img class="headshot" src="../head.jpg" alt="张恒" />
+        <h1>张恒</h1>
+        <p class="affiliation">华南师范大学</p>
+        <p class="side-bio">
+          人工智能专业硕士研究生，研究方向为大语言模型智能体、强化学习与图学习。
+        </p>
+        <nav class="contact-list" aria-label="联系方式">
+          <a href="mailto:2024025450@m.scnu.edu.cn"><span aria-hidden="true">✉️</span>邮箱</a>
+          <a href="https://github.com/zhangheng2604" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>GitHub</a>
+          <a href="blog/"><span aria-hidden="true">✎</span>研究博客</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <section class="about-section" aria-labelledby="about-zh">
+          <h2 id="about-zh" class="section-heading">关于我</h2>
+          <p>
+            我希望构建能够完成长程、复杂与协作任务的智能体，重点关注智能体如何学习、
+            多智能体如何组织协作，以及基础模型如何依托结构化证据进行可靠推理。
+          </p>
+          <p>
+            如果你对我的论文或研究问题感兴趣，欢迎通过
+            <a href="mailto:2024025450@m.scnu.edu.cn">邮件</a>交流。
+          </p>
+        </section>
+
+        <section id="research" aria-labelledby="research-title-zh">
+          <div class="section-kicker">研究导览</div>
+          <h2 id="research-title-zh" class="research-heading">三个问题贯穿我的研究。</h2>
+          <p class="research-intro">
+            它们分别对应协作智能、可信结构化推理，以及正在推进的长程智能体学习。
+          </p>
+
+          <div class="research-map" aria-label="研究问题导览图">
+            <div class="map-origin">
+              <span>总体目标</span>
+              <strong>面向复杂长程任务的可学习、可协作智能体</strong>
+            </div>
+            <div class="map-branches">
+              <article class="research-branch">
+                <span class="branch-number">01</span>
+                <p class="branch-status">成熟主线</p>
+                <h3>多智能体应该如何通信与协作？</h3>
+                <p>学习通信拓扑、分解与共享知识，并在多模态环境中形成可靠协作。</p>
+                <div class="topic-row"><span>通信拓扑</span><span>知识共享</span><span>智能体辩论</span></div>
+                <div class="map-paper-links">
+                  <a href="../papers/hyperagent.pdf">HyperAgent</a>
+                  <a href="../papers/evohyper.pdf">EvoHyper</a>
+                  <a href="../papers/hyperbalance.pdf">HyperBalance</a>
+                  <a href="../papers/d3mas.pdf">D3MAS</a>
+                </div>
+              </article>
+
+              <article class="research-branch">
+                <span class="branch-number">02</span>
+                <p class="branch-status">成熟主线</p>
+                <h3>模型如何实现可靠泛化与忠实推理？</h3>
+                <p>利用结构先验和证据感知学习，连接图、跨域、多语言与多模态任务。</p>
+                <div class="topic-row"><span>泛化</span><span>图学习</span><span>证据建模</span></div>
+                <div class="map-paper-links">
+                  <a href="../papers/h4g.pdf">H4G</a>
+                  <a href="../papers/g2rammar.pdf">G²rammar</a>
+                  <a href="../papers/mitigating-generic-token-dominance.pdf">Cross-domain FM</a>
+                </div>
+              </article>
+
+              <article class="research-branch research-branch--ongoing">
+                <span class="branch-number">03</span>
+                <p class="branch-status">正在推进</p>
+                <h3>智能体如何在长程交互中持续改进？</h3>
+                <p>研究智能体强化学习、长程信用分配、世界模型、规划与稳定自我改进。</p>
+                <div class="topic-row"><span>Agent RL</span><span>世界模型</span><span>规划</span></div>
+                <div class="map-paper-links">
+                  <a href="../papers/fossilwriter.pdf">FossilWriter</a>
+                  <a href="blog/2026/08/research-agenda/">研究议程</a>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <aside class="blog-promo" aria-label="研究博客">
+            <div>
+              <p class="blog-promo-label">写作与研究札记</p>
+              <h3>记录论文之间的想法。</h3>
+              <p>论文碰撞、技术教程、开放问题，以及构建长程与协作智能体过程中的研究笔记。</p>
+            </div>
+            <a class="blog-button" href="blog/">进入博客 <span aria-hidden="true">↗</span></a>
+          </aside>
+        </section>
+
+        <section id="publications" aria-labelledby="publications-zh">
+          <h2 id="publications-zh" class="section-heading">代表论文</h2>
+          <div class="cluster-publications">
+            <article>
+              <h3>协作智能</h3>
+              <p><a href="../papers/hyperbalance.pdf">HyperBalance</a> · <a href="../papers/evohyper.pdf">EvoHyper</a> · <a href="../papers/d3mas.pdf">D3MAS</a> · <a href="../papers/hyperagent.pdf">HyperAgent</a></p>
+            </article>
+            <article>
+              <h3>结构化可信推理</h3>
+              <p><a href="../papers/h4g.pdf">H4G</a> · <a href="../papers/g2rammar.pdf">G²rammar</a> · <a href="../papers/mitigating-generic-token-dominance.pdf">Cross-domain Foundation Model</a></p>
+            </article>
+            <article>
+              <h3>长程学习与世界模型</h3>
+              <p><a href="../papers/fossilwriter.pdf">FossilWriter</a> · Agent reinforcement learning（进行中）</p>
+            </article>
+          </div>
+          <p class="full-list-link"><a href="../#publications">查看完整英文论文列表 ↗</a></p>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
