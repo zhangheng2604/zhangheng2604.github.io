@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>强化学习是否带来了新的推理能力？ · 张恒</title>
-    <meta name="description" content="从四篇 ICML 2026 论文出发，讨论概率重排、经验可达性与新推理能力之间的区别。" />
+    <meta name="description" content="逐篇解读 Power Sampling、SAGE、G²RPO 与 Verbalized Sampling，讨论 RLVR 的准确率提升、推理模式坍缩与新能力之间的关系。" />
     <link rel="canonical" href="https://zhangheng2604.github.io/zh/blog/2026/08/does-rl-create-new-reasoning/" />
     <link rel="alternate" hreflang="en" href="https://zhangheng2604.github.io/blog/2026/08/does-rl-create-new-reasoning/" />
     <link rel="alternate" hreflang="zh-CN" href="https://zhangheng2604.github.io/zh/blog/2026/08/does-rl-create-new-reasoning/" />
     <meta property="og:title" content="强化学习是否带来了新的推理能力？" />
-    <meta property="og:description" content="概率重排、经验可达性与能力扩张的三层分析。" />
+    <meta property="og:description" content="从完整轨迹采样、经验支持集和正确模式竞争重新理解 RLVR。" />
     <meta property="og:type" content="article" />
     <meta property="article:published_time" content="2026-08-03" />
     <meta property="article:modified_time" content="2026-08-04" />
@@ -32,14 +32,15 @@
     </header>
 
     <main class="article-shell">
+      <a class="back-home" href="../../../../../" aria-label="返回个人主页">← 返回个人主页</a>
       <header class="article-header article-header--essay">
-        <p class="eyebrow">论文碰撞</p>
+        <p class="eyebrow">论文导读</p>
         <h1>强化学习是否带来了新的推理能力？</h1>
         <p class="article-deck">
-          准确率提高可能来自新能力，也可能来自已有答案的概率上升。
-          四篇 ICML 2026 论文提供了一组互补证据。
+          pass@1 上升以后，模型究竟学会了新的推理方法，还是更容易采到原有的正确答案。
+          四篇 ICML 2026 论文从推理时采样与训练时模式竞争给出了不同证据。
         </p>
-        <div class="article-byline"><span>张恒</span><span>更新于 2026 年 8 月 4 日</span><span>约 12 分钟</span></div>
+        <div class="article-byline"><span>张恒</span><span>更新于 2026 年 8 月 4 日</span><span>约 20 分钟</span></div>
       </header>
       <hr class="article-rule" />
 
@@ -47,224 +48,348 @@
         <aside class="article-toc" aria-label="本文目录">
           <strong>本文目录</strong>
           <a href="#preface-zh">写在前头</a>
-          <a href="#definition-zh">先明确新能力</a>
-          <a href="#inference-zh">推理时的可达性</a>
-          <a href="#training-zh">训练时的模式收缩</a>
+          <a href="#power-zh">Power Sampling</a>
+          <a href="#sage-zh">SAGE</a>
+          <a href="#g2rpo-zh">G²RPO</a>
+          <a href="#vs-zh">Verbalized Sampling</a>
           <a href="#comparison-zh">方法汇总</a>
-          <a href="#evaluation-zh">如何区分三种变化</a>
+          <a href="#conclusion-zh">回到最初的问题</a>
           <a href="#references-zh">参考文献</a>
         </aside>
 
         <article class="article-body article-body--technical">
           <h2 id="preface-zh">写在前头</h2>
-          <p>
-            强化学习已经成为训练推理模型的常用方法。一个模型在数学或代码任务上的 pass@1 提高后，
-            通常会被描述为推理能力增强。不过，pass@1 只记录第一次采样是否成功，
-            它没有说明正确轨迹是在训练后才出现，还是一直位于基座模型的低概率区域。
+          <p class="section-opening">
+            RLVR 论文经常从一张准确率表开始。训练后的模型在 AIME 或 MATH 上得到更高的 pass@1，
+            随后被描述为拥有更强的推理能力。问题在于，pass@1 只说明第一条采样结果更容易答对，
+            它没有告诉我们正确方法是训练后才出现，还是原本就藏在基座模型的低概率区域。
           </p>
           <p>
-            这一区别会影响对训练方法的判断。如果正确解法早已存在，训练的主要作用可能是调整概率排序。
-            如果正确解法原本很难在有限预算内被发现，训练可能改善了可达性。
-            只有当新的解题结构无法通过基座模型的推理时扩展恢复，并且能够稳定迁移到新任务时，
-            能力扩张的解释才更有说服力。
+            pass@k 提供了另一个观察角度。如果 pass@1 上升而较大的 k 没有同步改善，
+            模型可能只是更集中地重复少数高概率解法。反过来，如果不修改模型参数，
+            只改变采样方法就能恢复训练收益，也说明默认解码没有展示模型能够生成的全部内容。
           </p>
           <p>
-            本文选择 Power Sampling、Verbalized Sampling、SAGE 和 G²RPO 四篇论文
+            下面依次讨论 Power Sampling、SAGE、G²RPO 和 Verbalized Sampling
             <a class="citation" href="#ref-1">[1]</a><a class="citation" href="#ref-2">[2]</a><a class="citation" href="#ref-3">[3]</a><a class="citation" href="#ref-4">[4]</a>。
-            它们使用的任务和算法并不相同，但共同研究了一个问题。
-            模型能力的变化有多少来自分布内部的重新组织。
+            前三篇直接研究推理模型的采样或 RLVR 训练。最后一篇研究开放式生成中的模式坍缩，
+            更适合作为一条旁证。四篇工作并不共享同一组假设，也不能被压缩成同一个结论。
           </p>
 
-          <h2 id="definition-zh">先明确什么是新能力</h2>
-          <p>
-            对 softmax 语言模型而言，几乎所有有限 token 序列都可能具有非零概率。
-            因此，用理论支持集判断新能力并不实用。概率为十的负二十次方的正确答案虽然存在，
-            在实际 rollout 预算下仍然等同于不可见。
-          </p>
-          <p>
-            为了讨论方便，可以引入一个与计算预算相关的可达集合。下面的记号不是某篇论文的原始定义，
-            而是对四篇工作的统一整理。
-          </p>
-          <div class="equation equation--stacked" role="math" aria-label="R B of x is the set of solutions that can be sampled and verified within budget B">
-            <span><i>R</i><sub>B</sub>(<i>x</i>) = { <i>y</i> | 在预算 <i>B</i> 内可以采样并验证 <i>y</i> }</span>
-          </div>
-          <p>
-            预算 <i>B</i> 可以包含采样次数、最大生成长度、验证器调用次数和推理时间。
-            这样一来，模型变化可以分成三个层次。
+          <h2 id="power-zh">[ICML 2026] Scalable Power Sampling</h2>
+          <p class="paper-lede"><strong>Ji 等人</strong>　训练无关的完整轨迹分布锐化　数学、代码与知识问答</p>
+          <p class="paper-point">
+            <strong>论文从一个局部选择错误开始。</strong>
+            假设模型回答 2+2 时，第一步选择直接猜测的概率为 0.6，选择先规划再计算的概率为 0.4。
+            直接猜测在当前 token 上更常见，但规划分支在后面给出正确答案的概率更高。
+            如果把 temperature 降低到 0.25，局部优势会继续被放大，模型选择猜测的概率升到约 0.835。
           </p>
 
-          <figure class="concept-figure" aria-labelledby="framework-caption-zh">
-            <div class="framework-flow">
-              <div class="framework-step">
-                <span>01</span><strong>概率重排</strong>
-                <p>正确轨迹已经可达，训练或解码提高了它的排序。</p>
-              </div>
-              <div class="framework-step">
-                <span>02</span><strong>经验可达性提高</strong>
-                <p>正确轨迹概率非零，但只有在更好的探索下才进入有限预算。</p>
-              </div>
-              <div class="framework-step">
-                <span>03</span><strong>能力扩张</strong>
-                <p>出现基座模型在合理预算下无法恢复的新解题结构。</p>
-              </div>
-            </div>
-            <figcaption id="framework-caption-zh">图 1　从准确率变化到能力扩张的三层分析</figcaption>
+          <figure class="evidence-figure" aria-labelledby="power-caption-zh">
+            <svg class="paper-svg" viewBox="0 0 760 330" role="img" aria-label="低温采样与完整轨迹采样在规划和猜测分支上的差别">
+              <defs>
+                <marker id="arrow-power-zh" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#8b9690" /></marker>
+                <marker id="arrow-power-green-zh" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#176b52" /></marker>
+              </defs>
+              <text x="20" y="26" font-size="12" font-weight="700">第一步的局部概率</text>
+              <rect class="svg-node" x="20" y="126" width="112" height="48" rx="24" />
+              <text x="76" y="155" text-anchor="middle" font-size="13" font-weight="700">开始</text>
+              <path class="svg-line" d="M132 145 C190 110, 205 88, 270 83" marker-end="url(#arrow-power-zh)" />
+              <path class="svg-line" d="M132 155 C190 190, 205 218, 270 223" marker-end="url(#arrow-power-zh)" />
+              <rect class="svg-node-accent" x="276" y="56" width="154" height="54" rx="27" />
+              <text x="353" y="80" text-anchor="middle" font-size="14" font-weight="700">PLAN 规划</text>
+              <text class="svg-muted" x="353" y="99" text-anchor="middle" font-size="11">p = 0.4</text>
+              <rect class="svg-node" x="276" y="196" width="154" height="54" rx="27" />
+              <text x="353" y="220" text-anchor="middle" font-size="14" font-weight="700">GUESS 猜测</text>
+              <text class="svg-muted" x="353" y="239" text-anchor="middle" font-size="11">p = 0.6</text>
+              <path class="svg-line-accent" d="M430 82 C485 82, 510 82, 565 82" marker-end="url(#arrow-power-green-zh)" />
+              <path class="svg-line" d="M430 223 C485 223, 510 223, 565 223" marker-end="url(#arrow-power-zh)" />
+              <rect class="svg-node-accent" x="572" y="55" width="164" height="54" rx="27" />
+              <text x="654" y="79" text-anchor="middle" font-size="14" font-weight="700">正确答案</text>
+              <text class="svg-accent" x="654" y="99" text-anchor="middle" font-size="11">后续成功率 0.95</text>
+              <rect class="svg-node" x="572" y="196" width="164" height="54" rx="27" />
+              <text x="654" y="220" text-anchor="middle" font-size="14" font-weight="700">正确答案</text>
+              <text class="svg-muted" x="654" y="240" text-anchor="middle" font-size="11">后续成功率 0.55</text>
+              <text class="svg-muted" x="20" y="298" font-size="11">低温采样放大当前 token 的 GUESS 偏好</text>
+              <text class="svg-accent" x="395" y="298" font-size="11">Power Sampling 根据后续完整轨迹重新评估 PLAN</text>
+            </svg>
+            <figcaption id="power-caption-zh">图 1　低温采样只锐化局部选择，Power Sampling 还考虑候选分支的后续轨迹。根据文献 [1] Section 4.1 重绘。</figcaption>
           </figure>
 
-          <p>
-            第一层改变默认答案的排名。第二层改变集合 <i>R</i><sub>B</sub>(<i>x</i>) 的边界。
-            第三层还要求新的结构具有稳定性与迁移性。后面的四篇工作主要为前两层提供证据。
+          <p class="paper-point">
+            <strong>Power distribution 处理的是完整回答。</strong>
+            给定基座模型的序列分布 <i>p</i>(<i>y</i>|<i>x</i>)，论文希望从下面的全局分布采样。
           </p>
-
-          <h2 id="inference-zh">线索一　不改参数也能改变可见能力</h2>
-          <h3>Power Sampling 如何重排完整轨迹</h3>
-          <p>
-            Power Sampling 直接修改基座模型对完整回答的分布 <a class="citation" href="#ref-1">[1]</a>。
-            当指数 α 大于 1 时，高概率轨迹得到进一步放大。
-          </p>
-          <div class="equation" role="math" aria-label="p alpha of y given x equals p of y given x to the alpha divided by Z">
+          <div class="equation" role="math" aria-label="power distribution over complete sequences">
             <i>p</i><sub>α</sub>(<i>y</i> | <i>x</i>) = <i>p</i>(<i>y</i> | <i>x</i>)<sup>α</sup> / <i>Z</i>
             <span>α &gt; 1</span>
           </div>
           <p>
-            这里的关键是完整轨迹。简单降低 temperature 只会放大当前 token 的局部偏好。
-            如果模型一开始更偏向一条容易失败的捷径，局部锐化可能让错误更严重。
-            Power distribution 会结合后续 rollout 的质量，对早期选择进行修正。
-          </p>
-          <p>
-            在 Qwen2.5-7B 上，基座模型在 MATH500、HumanEval 和 GPQA 的 pass@1
-            分别为 0.498、0.329 和 0.278。Power Sampling 将结果提高到 0.708、0.756 和 0.349。
-            对应 GRPO 模型的结果为 0.740、0.561 和 0.354。
-            这说明一部分训练收益可以由推理时的分布锐化恢复。
+            直接计算归一化常数需要枚举未来序列。早期方法因此使用 MCMC，并带来很高的推理开销。
+            这篇论文把全局分布拆成低温 next-token 分布和一个 future-aware scaling factor。
+            对每个 Top-K 候选 token，算法生成若干未来 rollout，估计这个选择会通向怎样的完整序列，
+            再用 jackknife 消除 Monte Carlo 比值估计的一阶偏差。实际实现使用分块前瞻，
+            因此不需要在每个 token 上展开到序列结束。
           </p>
 
-          <h3>Verbalized Sampling 为什么能找回尾部答案</h3>
-          <p>
-            Verbalized Sampling 研究的是另一种分布收缩 <a class="citation" href="#ref-3">[3]</a>。
-            偏好数据中的标注者往往更喜欢熟悉、流畅和典型的回答。
-            当多个回答质量接近时，典型性会成为额外的排序信号，
-            使参考分布中本来就常见的模式获得更高概率。
-          </p>
-          <p>
-            作者没有重新训练模型，而是让模型一次生成多个候选及其概率，再从显式分布中采样。
-            这种方法在诗歌、故事、笑话、对话模拟和合成数据任务上提高了输出多样性。
-            人工评测显示质量没有出现对应幅度的下降。
-          </p>
-          <p>
-            两篇工作的共同点是参数保持不变，但可观察结果发生了明显变化。
-            Power Sampling 调整完整推理轨迹的概率，Verbalized Sampling 调整模型表达候选分布的方式。
-            它们都说明默认解码结果不能直接等同于模型表示能力的边界。
+          <div class="table-wrap" role="region" aria-label="Power Sampling 在 Qwen2.5-7B 上的实验结果" tabindex="0">
+            <table class="article-table">
+              <thead><tr><th>Qwen2.5-7B</th><th>MATH500</th><th>HumanEval</th><th>GPQA</th></tr></thead>
+              <tbody>
+                <tr><td>Base</td><td>0.498</td><td>0.329</td><td>0.278</td></tr>
+                <tr><td>Low temperature</td><td>0.628</td><td>0.524</td><td>0.303</td></tr>
+                <tr><td>Power Sampling</td><td><strong>0.708</strong></td><td><strong>0.756</strong></td><td>0.349</td></tr>
+                <tr><td>GRPO on MATH</td><td>0.740</td><td>0.561</td><td><strong>0.354</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="source-note">表 1　pass@1 结果摘自文献 [1] Table 1。GRPO 只使用数学数据训练，因此跨任务比较需要谨慎。</p>
+
+          <p class="paper-point">
+            <strong>实验支持的是部分恢复，而不是完全等价。</strong>
+            Power Sampling 在 HumanEval 上超过对应的数学 GRPO 模型，在 MATH500 上仍低于 GRPO。
+            它还将 MCMC 最慢设置中的单题推理时间从 2.5 分钟降到 0.22 分钟。
+            在 Qwen2.5-Math-7B 上，八次 rollout 的重复答案比例为 62.5%，低于 GRPO 的 83.3%。
+            这些结果说明基座模型中确实存在没有被普通解码充分利用的正确轨迹。
+            它们并不能证明所有 RL 收益都来自锐化，也没有检查训练后是否出现了新的解法结构。
           </p>
 
-          <h2 id="training-zh">线索二　训练会让正确模式彼此竞争</h2>
-          <h3>从 reverse KL 的稳定性到 SAGE</h3>
-          <p>
-            RLVR 中的 reverse KL 将训练策略限制在参考模型附近。
-            这种约束可以稳定训练，也会让低概率正确轨迹更难被采到。
-            SAGE 没有删除 KL 项，而是用 guide function 改写锚点 <a class="citation" href="#ref-2">[2]</a>。
+          <h2 id="sage-zh">[ICML 2026] SAGE</h2>
+          <p class="paper-lede"><strong>Lee、Kang 与 Hwang</strong>　重塑 reverse KL 的参考锚点　数学 RLVR</p>
+          <p class="paper-point">
+            <strong>这篇论文关心的是低概率正确轨迹为什么越来越难被看见。</strong>
+            带 reverse KL 的 RLVR 会把训练策略限制在参考模型附近。这个锚点能够减轻奖励过拟合，
+            但 stationary solution 仍然按参考概率进行乘法加权。某条正确轨迹如果在参考模型中概率很低，
+            即使奖励为正，它也很难在有限 rollout 中进入训练批次。
           </p>
-          <div class="equation equation--stacked" role="math" aria-label="SAGE policy is proportional to q times the reference policy times exponential reward over beta">
+          <div class="equation equation--stacked" role="math" aria-label="stationary policies for reverse KL and SAGE">
             <span>π<sup>*</sup>(<i>y</i> | <i>x</i>) ∝ π<sub>ref</sub>(<i>y</i> | <i>x</i>) exp(<i>r</i> / β)</span>
             <span>π<sup>*</sup><sub>SAGE</sub>(<i>y</i> | <i>x</i>) ∝ <i>q</i>(<i>x</i>, <i>y</i>) π<sub>ref</sub>(<i>y</i> | <i>x</i>) exp(<i>r</i> / β)</span>
           </div>
           <p>
-            guide function 使用 surprisal 或 entropy 等信号定位推理分叉，
-            再提高低密度正确轨迹被探索的机会。SAGE 在多个数学任务上同时改善 pass@1 和高采样预算下的 pass@k。
-          </p>
-          <p>
-            论文所说的 support expansion 是经验支持集扩张。
-            一条轨迹在参考策略下仍然需要具有非零概率。
-            SAGE 改变的是它能否在有限 rollout 中越过可见阈值，不是凭空增加理论支持。
+            SAGE 保留 KL 约束，只把参考锚点从 π<sub>ref</sub> 改成 <i>q</i>π<sub>ref</sub>。
+            guide function <i>q</i> 在每次策略更新中保持固定，用来提高某些低密度区域的相对权重。
+            论文尝试了随机扰动、基于 surprisal 的 token guide，以及基于 entropy 的 branch guide。
+            surprisal 更容易捕捉罕见措辞。entropy 在模型面临多个可行后续方向时升高，
+            因而更接近作者想找的推理分叉。
           </p>
 
-          <h3>G²RPO 如何描述赢家通吃</h3>
-          <p>
-            G²RPO 将正确 rollout 按解法族聚类，并研究这些模式之间的概率流 <a class="citation" href="#ref-4">[4]</a>。
-            在论文的平均场近似中，标准 GRPO 会持续提高正确模式的集中度。
+          <figure class="evidence-figure" aria-labelledby="sage-caption-zh">
+            <svg class="paper-svg" viewBox="0 0 760 300" role="img" aria-label="参考分布、标准 reverse KL 与 SAGE 的概率质量示意">
+              <text x="70" y="26" font-size="12" font-weight="700">参考策略</text>
+              <text x="294" y="26" font-size="12" font-weight="700">标准 reverse KL</text>
+              <text x="554" y="26" font-size="12" font-weight="700">SAGE</text>
+              <line class="svg-line" x1="38" y1="238" x2="214" y2="238" />
+              <line class="svg-line" x1="272" y1="238" x2="448" y2="238" />
+              <line class="svg-line" x1="516" y1="238" x2="722" y2="238" />
+              <rect x="55" y="82" width="40" height="156" fill="#77817c" />
+              <rect x="112" y="148" width="40" height="90" fill="#aeb6b2" />
+              <rect x="169" y="207" width="40" height="31" fill="#d5dad7" />
+              <rect x="289" y="54" width="40" height="184" fill="#77817c" />
+              <rect x="346" y="174" width="40" height="64" fill="#aeb6b2" />
+              <rect x="403" y="220" width="40" height="18" fill="#d5dad7" />
+              <rect x="538" y="86" width="46" height="152" fill="#77817c" />
+              <rect x="604" y="139" width="46" height="99" fill="#91b9a9" />
+              <rect x="670" y="172" width="46" height="66" fill="#176b52" />
+              <text class="svg-muted" x="132" y="270" text-anchor="middle" font-size="10">常见 ← 正确轨迹 → 稀有</text>
+              <text class="svg-muted" x="366" y="270" text-anchor="middle" font-size="10">概率进一步集中</text>
+              <text class="svg-accent" x="620" y="270" text-anchor="middle" font-size="10">guide 提高低密度分支权重</text>
+            </svg>
+            <figcaption id="sage-caption-zh">图 2　SAGE 调整的是参考支持集内部的概率质量，不会创造参考策略概率为零的新轨迹。根据文献 [2] Section 4 重绘。</figcaption>
+          </figure>
+
+          <p class="paper-point">
+            <strong>empirical support 是理解这篇论文的关键。</strong>
+            作者把奖励正确且概率高于阈值 ε 的完成定义为经验支持集。
+            Theorem 4.3 给出了一条低概率正确轨迹在 SAGE 下跨过 ε 的充分条件。
+            这只是存在性结果。训练时并不知道哪条低概率轨迹最终正确，实际 guide 只能使用 entropy 等内在信号近似定位。
           </p>
-          <div class="equation" role="math" aria-label="L sub y equals the squared L2 norm of y">
-            <i>L</i><sub>y</sub> = ||<i>y</i>||<sub>2</sub><sup>2</sup>
+
+          <div class="metric-strip" aria-label="SAGE 平均实验结果">
+            <div class="metric-item"><strong>0.284</strong><span>GRPO + Branch 的平均 pass@1<br />GRPO 为 0.266</span></div>
+            <div class="metric-item"><strong>0.729</strong><span>GRPO + Branch 的平均 pass@256<br />GRPO 为 0.714</span></div>
+            <div class="metric-item"><strong>3 datasets</strong><span>AIME、AMC23 与 MATH-500<br />五个随机种子</span></div>
           </div>
           <p>
-            当这个量接近 1，概率质量会集中到单个正确模式。
-            模型仍然可能生成不同措辞，token entropy 也可能不低，
-            但这些回答实际使用的是同一类解题策略。
-          </p>
-          <p>
-            G²RPO 为稀有正确模式加入与其概率倒数相关的 advantage bonus。
-            在 DeepSeek-R1-Distill-Qwen-7B 上，GRPO 将平均正确模式数从 2.35 降到 1.97，
-            G²RPO 将其提高到 6.40。AIME 2025 准确率也从 46.7% 提高到 48.9%。
-          </p>
-          <p>
-            这里的模式数量来自 embedding 与 DBSCAN 聚类。
-            绝对数值会随编码器和聚类半径变化，因此更适合比较固定设置下的相对趋势。
-            这也是该结果目前最重要的适用边界。
+            Branch guide 在三项数学数据集上取得最好的平均 pass@1 与 pass@256。
+            论文还在 Knights and Knaves 分布外逻辑任务上观察到更完整的 pass@k 曲线。
+            不过 SAGE 始终在固定参考策略的理论支持集内重新分配概率。
+            参考模型概率为零的轨迹仍然不可达。论文也明确指出，来自更强教师模型的蒸馏才可能引入真正新的推理模式。
           </p>
 
-          <h2 id="comparison-zh">四篇工作的方法汇总</h2>
+          <h2 id="g2rpo-zh">[ICML 2026] G²RPO</h2>
+          <p class="paper-lede"><strong>Rad 等人</strong>　把 GRPO 写成模式空间中的概率流　AIME 数学推理</p>
+          <p class="paper-point">
+            <strong>正确答案之间也会发生竞争。</strong>
+            G²RPO 不把每条 token 序列都视为独立策略，而是把语义上相近的正确 rollout 聚成解法族。
+            对一个 prompt，模型可以被粗粒度地表示为若干正确模式和错误模式上的概率分布。
+            在论文的 KL-free、二元验证器和平均场假设下，标准 GRPO 会使正确模式之间的差异不断放大。
+          </p>
+          <div class="equation" role="math" aria-label="within good concentration">
+            <i>L</i><sub>y</sub> = ||<i>y</i>||<sub>2</sub><sup>2</sup>
+            <span>1 / K ≤ L<sub>y</sub> ≤ 1</span>
+          </div>
           <p>
-            四篇论文并没有回答完全相同的问题。下面的表格将它们放到同一个分析框架中，
-            重点比较改变对象、主要证据和结论边界。
+            当 K 个正确模式接近均匀分布时，<i>L</i><sub>y</sub> 接近 1/K。
+            当一个模式占据全部概率时，它接近 1。论文证明，在没有精确概率并列的情况下，
+            GRPO 的 collision field 会让最大坐标继续占优，最后趋向 winner-take-all。
+            这比 token entropy 更具体，因为不同措辞可能仍属于同一类解题方法。
+          </p>
+
+          <figure class="evidence-figure" aria-labelledby="g2-caption-zh">
+            <svg class="paper-svg" viewBox="0 0 760 315" role="img" aria-label="GRPO 与 G2RPO 对正确模式概率的不同影响">
+              <defs>
+                <marker id="arrow-g2-gray-zh" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#8b9690" /></marker>
+                <marker id="arrow-g2-green-zh" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#176b52" /></marker>
+              </defs>
+              <text x="48" y="28" font-size="12" font-weight="700">基座模型中的三个正确模式</text>
+              <circle cx="145" cy="145" r="40" fill="#dfe5e1" /><circle cx="70" cy="220" r="31" fill="#c9d2cd" /><circle cx="222" cy="221" r="28" fill="#b7c4be" />
+              <text x="145" y="150" text-anchor="middle" font-size="12">模式 A</text><text x="70" y="225" text-anchor="middle" font-size="11">模式 B</text><text x="222" y="226" text-anchor="middle" font-size="11">模式 C</text>
+              <path class="svg-line" d="M274 118 C332 88, 352 80, 405 85" marker-end="url(#arrow-g2-gray-zh)" />
+              <path class="svg-line-accent" d="M274 222 C330 248, 352 255, 405 252" marker-end="url(#arrow-g2-green-zh)" />
+              <text class="svg-muted" x="336" y="82" text-anchor="middle" font-size="10">GRPO</text>
+              <text class="svg-accent" x="338" y="278" text-anchor="middle" font-size="10">G²RPO</text>
+              <text x="520" y="28" font-size="12" font-weight="700">训练后的概率质量</text>
+              <circle cx="558" cy="90" r="57" fill="#8c9892" /><circle cx="667" cy="82" r="14" fill="#dfe5e1" /><circle cx="687" cy="126" r="10" fill="#e9ecea" />
+              <text x="558" y="95" text-anchor="middle" font-size="12" fill="#fff">单一主导模式</text>
+              <circle cx="520" cy="238" r="37" fill="#86b7a5" /><circle cx="611" cy="238" r="36" fill="#6fa58f" /><circle cx="700" cy="238" r="35" fill="#55977d" />
+              <text x="520" y="243" text-anchor="middle" font-size="11">A</text><text x="611" y="243" text-anchor="middle" font-size="11">B</text><text x="700" y="243" text-anchor="middle" font-size="11">C</text>
+            </svg>
+            <figcaption id="g2-caption-zh">图 3　GRPO 的平均场动力学趋向单个正确模式，G²RPO 用反碰撞 bonus 提高稀有正确模式的权重。根据文献 [3] Figures 1–3 重绘。</figcaption>
+          </figure>
+
+          <p class="paper-point">
+            <strong>方法只修改每条 rollout 的 advantage。</strong>
+            每组 16 个 rollout 先用验证器分成正确与错误样本。正确样本经过 embedding 和 DBSCAN 聚类，
+            频率较低的正确簇得到与概率倒数相关的 bonus。只给正确模式加奖励会影响错误概率质量的下降速度，
+            因此作者又加入 neutrality correction，让消除错误答案的通道尽量保持接近标准 GRPO。
+          </p>
+
+          <div class="table-wrap" role="region" aria-label="G2RPO 实验结果" tabindex="0">
+            <table class="article-table">
+              <thead><tr><th>模型与方法</th><th>AIME 2025</th><th>AIME 2024</th><th>平均正确模式数</th></tr></thead>
+              <tbody>
+                <tr><td>DeepSeek 7B Base</td><td>38.7</td><td>52.1</td><td>2.35</td></tr>
+                <tr><td>DeepSeek 7B GRPO</td><td>46.7</td><td>60.4</td><td>1.97</td></tr>
+                <tr><td>DeepSeek 7B G²RPO</td><td><strong>48.9</strong></td><td><strong>61.8</strong></td><td><strong>6.40</strong></td></tr>
+                <tr><td>Qwen3 14B Base</td><td>9.2</td><td>13.8</td><td>3.36</td></tr>
+                <tr><td>Qwen3 14B GRPO</td><td>37.5</td><td>45.9</td><td>1.45</td></tr>
+                <tr><td>Qwen3 14B G²RPO</td><td><strong>40.3</strong></td><td><strong>53.8</strong></td><td><strong>10.25</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="source-note">表 2　准确率与模式覆盖摘自文献 [3] Table 1。模式数是固定编码器和聚类尺度下的操作性指标。</p>
+          <p>
+            两个模型上都出现了相同方向的变化。GRPO 提高准确率，却把平均正确模式数压到基座模型以下。
+            G²RPO 同时提高准确率和模式覆盖。这个结论仍有明确边界。
+            理论使用平均场近似，主要实验集中在 AIME，聚类得到的模式不是内在真值。
+            只有在有限 rollout 中出现过的模式才能被重新加权，真正的长尾解法仍可能完全不可见。
+          </p>
+
+          <h2 id="vs-zh">[ICML 2026] Verbalized Sampling</h2>
+          <p class="paper-lede"><strong>Zhang 等人</strong>　用分布式提示恢复对齐模型的输出多样性　开放式生成与合成数据</p>
+          <p class="paper-point">
+            <strong>这篇论文研究的是另一类模式坍缩。</strong>
+            作者在偏好数据中观察到 typicality bias。标注者在真实质量接近时，
+            更容易选择熟悉、流畅并且在基座模型中概率较高的回答。
+            在带 KL 的 RLHF 最优解中，这个偏好近似表现为对参考分布继续做 power sharpening。
+            常见回答因此变得更常见。
+          </p>
+          <p>
+            Verbalized Sampling 没有修改训练算法。它改变了问题的语义对象。
+            普通提示要求一个答案，最典型的输出往往是单个常见实例。
+            VS 要求模型给出一组候选和相应概率，最典型的输出变成一组能够代表分布的样本。
+            作者还比较了直接生成多个答案的 list prompt。实验显示，仅仅要求列表仍容易得到若干排行榜式的常见答案，
+            明确要求概率分布才是主要差别。
+          </p>
+
+          <figure class="evidence-figure" aria-labelledby="vs-caption-zh">
+            <div class="prompt-compare">
+              <div class="prompt-panel">
+                <span>Instance-level prompt</span>
+                <strong>写一个关于咖啡的笑话</strong>
+                <div class="sample-answer">咖啡为什么报警，因为它被 mugged 了</div>
+                <div class="sample-answer">咖啡为什么报警，因为它被 mugged 了</div>
+                <div class="sample-answer">咖啡为什么报警，因为它被 mugged 了</div>
+              </div>
+              <div class="prompt-panel">
+                <span>Distribution-level prompt</span>
+                <strong>写五个关于咖啡的笑话，并给出各自概率</strong>
+                <div class="sample-answer">Espresso 解决不了所有问题 <em>0.12</em></div>
+                <div class="sample-answer">Error 404，Coffee not found <em>0.07</em></div>
+                <div class="sample-answer">Latte 去看心理医生 <em>0.15</em></div>
+              </div>
+            </div>
+            <figcaption id="vs-caption-zh">图 4　普通提示寻找典型实例，VS 要求模型描述一个有代表性的候选分布。根据文献 [4] Figure 1 与 Table 1 重绘。</figcaption>
+          </figure>
+
+          <div class="metric-strip" aria-label="Verbalized Sampling 主要结果">
+            <div class="metric-item"><strong>1.6–2.1×</strong><span>诗歌、故事和笑话任务中<br />相对直接提示的多样性提升</span></div>
+            <div class="metric-item"><strong>90 people</strong><span>人工研究参与者<br />覆盖三类创作任务</span></div>
+            <div class="metric-item"><strong>0.12 KL</strong><span>开放式枚举任务中<br />与预训练分布代理的差距</span></div>
+          </div>
+          <p>
+            VS 在创意写作、对话模拟、开放式问答和合成数据中改善了多样性与质量的折中，
+            更大的模型通常受益更多。它还在 Tulu 的 SFT、DPO 和 RLVR 阶段都恢复了部分输出多样性。
+            但这些实验主要不是数学推理。它可以证明对齐后的模型仍保留未被默认提示展示的生成变化，
+            不能直接证明 RLVR 是否创造了新的数学推理方法。因此这里把它作为跨任务旁证，而不是与前三篇等强的证据。
+          </p>
+
+          <h2 id="comparison-zh">方法汇总</h2>
+          <p>
+            四篇论文可以围绕概率分布建立联系，但它们改变的对象、使用的任务和能够支持的结论并不相同。
           </p>
           <div class="table-wrap" role="region" aria-label="四篇论文方法比较" tabindex="0">
             <table class="article-table article-table--wide">
-              <thead>
-                <tr><th>工作</th><th>改变对象</th><th>需要训练</th><th>主要证据</th><th>不能直接说明</th></tr>
-              </thead>
+              <thead><tr><th>工作</th><th>主要问题</th><th>干预位置</th><th>核心证据</th><th>结论边界</th></tr></thead>
               <tbody>
-                <tr><td>Power Sampling</td><td>完整轨迹分布</td><td>否</td><td>无奖励采样恢复部分 GRPO 收益</td><td>所有 RL 收益都来自锐化</td></tr>
-                <tr><td>Verbalized Sampling</td><td>候选分布的表达与采样</td><td>否</td><td>多类开放任务恢复输出多样性</td><td>数学推理能力一定同步提高</td></tr>
-                <tr><td>SAGE</td><td>reverse KL 的参考锚点</td><td>是</td><td>pass@1 与 pass@k 同时改善</td><td>产生参考策略之外的理论支持</td></tr>
-                <tr><td>G²RPO</td><td>正确模式之间的 advantage</td><td>是</td><td>模式覆盖与准确率同时提高</td><td>聚类得到的模式数是内在真值</td></tr>
+                <tr><td>Power Sampling</td><td>普通解码是否遗漏正确轨迹</td><td>推理时的完整序列采样</td><td>无训练恢复部分 GRPO 收益</td><td>不能排除 RL 学到新结构</td></tr>
+                <tr><td>SAGE</td><td>reverse KL 是否压制低密度正确轨迹</td><td>训练时的参考锚点</td><td>pass@1 与 pass@k 同时改善</td><td>不扩展理论支持集</td></tr>
+                <tr><td>G²RPO</td><td>正确模式之间是否赢家通吃</td><td>训练时的 group advantage</td><td>模式覆盖和 AIME 准确率同步提高</td><td>依赖平均场与聚类代理</td></tr>
+                <tr><td>Verbalized Sampling</td><td>对齐模型是否隐藏生成多样性</td><td>推理时的提示语义</td><td>开放任务恢复多样性</td><td>不是数学 RLVR 的直接证据</td></tr>
               </tbody>
             </table>
           </div>
 
           <p>
-            从表中可以看出，Power Sampling 与 Verbalized Sampling 研究推理阶段的能力显现。
-            SAGE 与 G²RPO 研究训练阶段的能力收缩。
-            前两篇说明不改参数也能显著改变结果，后两篇说明优化正确率时也可能损失正确解法的覆盖范围。
-            这两条线索共同指向概率分布，而不是简单否定强化学习的作用。
+            Power Sampling 说明模型参数不变时，完整轨迹采样也能显著改变准确率。
+            SAGE 说明 reverse KL 的稳定性伴随着低密度轨迹难以进入有限训练预算。
+            G²RPO 进一步指出，即使轨迹都正确，GRPO 也可能让少数解法族占据几乎全部概率。
+            VS 则把相似现象扩展到开放式生成。它们共同反对把默认输出直接当作模型能力边界，
+            但没有共同证明 RL 只是在重新排序旧答案。
           </p>
 
-          <h2 id="evaluation-zh">怎样区分概率重排、可达性提高与能力扩张</h2>
+          <h2 id="conclusion-zh">回到最初的问题</h2>
           <p>
-            只比较基座模型与 RL 模型的 pass@1，无法区分三种变化。
-            一个更完整的实验至少需要四个步骤。
+            读完四篇论文后，更稳妥的做法是把“新能力”分成三个逐渐变强的说法。
+            这个框架适合放在证据之后，而不是用来预先归类论文。
           </p>
-          <ol class="article-list article-list--steps">
-            <li><strong>固定总预算。</strong> 对基座模型和 RL 模型使用相同的 token、rollout 与验证器预算。</li>
-            <li><strong>绘制恢复曲线。</strong> 比较普通采样、低温采样、Power Sampling 与 RL 模型在不同预算下的 pass@k。</li>
-            <li><strong>检查解法族。</strong> 同时报告语义聚类、程序结构和关键推理步骤，并测试聚类参数敏感性。</li>
-            <li><strong>测试分布外迁移。</strong> 新解法如果只在训练分布内出现，更可能是概率重排。稳定的跨任务迁移提供更强的能力扩张证据。</li>
-          </ol>
+          <figure class="concept-figure" aria-labelledby="framework-caption-zh">
+            <div class="framework-flow">
+              <div class="framework-step"><span>01</span><strong>概率重排</strong><p>正确轨迹已经常常能够采到，只是默认排序较低。</p></div>
+              <div class="framework-step"><span>02</span><strong>有限预算内可达</strong><p>轨迹概率非零，但需要更好的采样或探索才能出现。</p></div>
+              <div class="framework-step"><span>03</span><strong>能力边界扩张</strong><p>出现基座模型难以恢复，并能稳定迁移的新解题结构。</p></div>
+            </div>
+            <figcaption id="framework-caption-zh">图 5　准确率提高可以对应不同强度的能力变化。</figcaption>
+          </figure>
           <p>
-            如果基座模型通过更好的采样就能追平 RL 模型，说明已有模式的重新排序解释了主要收益。
-            如果 RL 使低概率模式在固定预算下稳定出现，但这些模式仍可从基座模型恢复，
-            更合适的表述是经验可达性提高。
-            如果新的解题结构无法从基座模型恢复，并且能够迁移到新的任务分布，
-            才有更充分的理由讨论能力扩张。
+            现有四篇工作的证据主要集中在前两层。要支持第三层，实验需要固定 token、rollout 与验证器预算，
+            比较基座模型和 RL 模型的完整 pass@k 恢复曲线，还要检查解法族是否真的具有新的程序结构或关键推理步骤。
+            最后还需要分布外迁移，避免把训练集中的概率锐化误认为通用能力扩张。
           </p>
-
-          <h2 id="conclusion-zh">小结</h2>
-          <p>
-            四篇论文提供的证据并不支持一个简单结论。
-            强化学习后的准确率提高既可能包含概率锐化，也可能包含探索范围变化。
-            现有结果能够较好地说明已有能力如何被选择和恢复，
-            但对真正的新能力仍需要更严格的预算控制、模式分析和分布外实验。
-          </p>
-          <p>
-            因此，讨论模型是否学会新推理时，问题不应只停留在准确率提高了多少。
-            更具体的问题是哪些解法原本已经存在，哪些解法在固定预算下第一次变得可达，
-            哪些解法又能够离开训练分布继续工作。
-          </p>
+          <div class="reading-note">
+            <strong>本文的判断</strong><br />
+            RLVR 后的准确率提升不能被简单归因于新能力，也不能被简单归因于分布锐化。
+            当前证据更充分地解释了已有正确轨迹如何被隐藏、发现和再次压缩。
+            真正的新推理结构是否出现，仍需要比 pass@1 更严格的实验设计。
+          </div>
 
           <h2 id="references-zh">参考文献</h2>
           <ol class="article-references article-references--standard">
             <li id="ref-1">Ji, X., Tutunov, R., Zimmer, M., &amp; Bou Ammar, H. (2026). <a href="https://openreview.net/pdf?id=SVyjXhZlDe" target="_blank" rel="noopener">Scalable Power Sampling: Unlocking Efficient, Training-Free Reasoning for LLMs via Distribution Sharpening</a>. Proceedings of the 43rd International Conference on Machine Learning, PMLR 306.</li>
             <li id="ref-2">Lee, C., Kang, M., &amp; Hwang, S. J. (2026). <a href="https://openreview.net/pdf?id=VzRUI5ZVkp" target="_blank" rel="noopener">SAGE: Shaping Anchors for Guided Exploration in RLVR of LLMs</a>. Proceedings of the 43rd International Conference on Machine Learning, PMLR 306.</li>
-            <li id="ref-3">Zhang, J., Yu, S., Chong, D., Sicilia, A., Tomz, M. R., Manning, C. D., &amp; Shi, W. (2026). <a href="https://openreview.net/pdf?id=zloIrd77G5" target="_blank" rel="noopener">Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity</a>. Proceedings of the 43rd International Conference on Machine Learning, PMLR 306.</li>
-            <li id="ref-4">Rad, A., Filom, K., Keivan, D., Mohajerin Esfahani, P., &amp; Kamalinejad, E. (2026). <a href="https://openreview.net/pdf?id=nAkHNBbg4p" target="_blank" rel="noopener">G²RPO: Geometric GRPO. Escaping LLMs’ Reasoning Ruts to Break the Accuracy-Entropy Trade-off</a>. Proceedings of the 43rd International Conference on Machine Learning, PMLR 306.</li>
+            <li id="ref-3">Rad, A., Filom, K., Keivan, D., Mohajerin Esfahani, P., &amp; Kamalinejad, E. (2026). <a href="https://openreview.net/pdf?id=nAkHNBbg4p" target="_blank" rel="noopener">G²RPO: Geometric GRPO. Escaping LLMs’ Reasoning Ruts to Break the Accuracy-Entropy Trade-off</a>. Proceedings of the 43rd International Conference on Machine Learning, PMLR 306.</li>
+            <li id="ref-4">Zhang, J., Yu, S., Chong, D., Sicilia, A., Tomz, M. R., Manning, C. D., &amp; Shi, W. (2026). <a href="https://openreview.net/pdf?id=zloIrd77G5" target="_blank" rel="noopener">Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity</a>. Proceedings of the 43rd International Conference on Machine Learning, PMLR 306.</li>
           </ol>
         </article>
       </div>
