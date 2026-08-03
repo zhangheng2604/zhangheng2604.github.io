@@ -1,0 +1,299 @@
+:root {
+  --paper: #fbfaf7;
+  --surface: #f4f1ea;
+  --ink: #292824;
+  --muted: #77736a;
+  --line: #e4dfd4;
+  --accent: #765e48;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "Songti SC", STSong, "Noto Serif CJK SC", "Source Han Serif SC",
+    Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.essay-header {
+  border-bottom: 1px solid var(--line);
+}
+
+.essay-nav {
+  width: min(1080px, calc(100% - 48px));
+  min-height: 68px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 13px;
+}
+
+.essay-brand,
+.essay-nav-links a {
+  text-decoration: none;
+}
+
+.essay-brand {
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.essay-nav-links {
+  display: flex;
+  gap: 22px;
+  color: var(--muted);
+}
+
+.essay-nav a:hover {
+  color: var(--accent);
+}
+
+.essay-index {
+  width: min(860px, calc(100% - 48px));
+  min-height: calc(100vh - 145px);
+  margin: 0 auto;
+  padding: 88px 0 104px;
+}
+
+.essay-kicker {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.essay-index h1 {
+  max-width: 620px;
+  margin: 0;
+  font-size: clamp(38px, 7vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+.essay-index-intro {
+  max-width: 520px;
+  margin: 24px 0 64px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.9;
+}
+
+.essay-list {
+  border-top: 1px solid var(--line);
+}
+
+.essay-card a {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 24px;
+  gap: 28px;
+  align-items: start;
+  padding: 30px 0 32px;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+
+.essay-card time,
+.essay-card-label {
+  color: var(--muted);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.essay-card h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.essay-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.essay-card-arrow {
+  color: #aaa397;
+  font-family: sans-serif;
+  font-size: 18px;
+  transition: transform 160ms ease;
+}
+
+.essay-card a:hover h2 {
+  color: var(--accent);
+}
+
+.essay-card a:hover .essay-card-arrow {
+  transform: translateX(4px);
+}
+
+.essay-article {
+  width: min(720px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 64px 0 110px;
+}
+
+.essay-back {
+  display: inline-block;
+  margin-bottom: 58px;
+  color: var(--muted);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.essay-back:hover {
+  color: var(--accent);
+}
+
+.essay-article-header {
+  margin-bottom: 58px;
+  padding-bottom: 38px;
+  border-bottom: 1px solid var(--line);
+}
+
+.essay-article-header h1 {
+  max-width: 680px;
+  margin: 12px 0 22px;
+  font-size: clamp(34px, 6vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.28;
+}
+
+.essay-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  color: var(--muted);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 11px;
+}
+
+.essay-prose {
+  font-size: 18px;
+  line-height: 2.05;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.essay-prose p {
+  margin: 0 0 1.65em;
+}
+
+.essay-prose p:first-child::first-letter {
+  float: left;
+  margin: 0.12em 0.12em 0 0;
+  color: var(--accent);
+  font-size: 3.25em;
+  line-height: 0.82;
+}
+
+.essay-footer {
+  width: min(1080px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 22px 0 32px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #969087;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 10px;
+}
+
+.essay-footer a {
+  text-decoration: none;
+}
+
+.essay-footer a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 680px) {
+  .essay-nav {
+    width: min(100% - 32px, 1080px);
+    min-height: 60px;
+  }
+
+  .essay-nav-links {
+    gap: 14px;
+  }
+
+  .essay-index {
+    width: min(100% - 36px, 860px);
+    padding: 58px 0 80px;
+  }
+
+  .essay-index-intro {
+    margin-bottom: 44px;
+    font-size: 16px;
+  }
+
+  .essay-card a {
+    grid-template-columns: 1fr 18px;
+    gap: 14px;
+  }
+
+  .essay-card time {
+    grid-column: 1 / -1;
+  }
+
+  .essay-card h2 {
+    font-size: 21px;
+  }
+
+  .essay-article {
+    width: min(100% - 36px, 720px);
+    padding: 40px 0 80px;
+  }
+
+  .essay-back {
+    margin-bottom: 42px;
+  }
+
+  .essay-article-header {
+    margin-bottom: 42px;
+    padding-bottom: 30px;
+  }
+
+  .essay-prose {
+    font-size: 17px;
+    line-height: 2;
+    text-align: left;
+  }
+
+  .essay-footer {
+    width: min(100% - 32px, 1080px);
+    flex-direction: column;
+    gap: 7px;
+  }
+}

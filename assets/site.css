@@ -315,6 +315,24 @@ body {
   font-weight: 750;
 }
 
+.personal-essay-footer {
+  padding: 14px 24px 30px;
+  text-align: center;
+}
+
+.personal-essay-footer a {
+  color: #9a9d9a;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.personal-essay-footer a:hover {
+  color: #57615d;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 900px) {
   .topbar {
     padding-inline: 22px;
