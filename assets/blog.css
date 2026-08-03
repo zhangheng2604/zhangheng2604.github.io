@@ -431,6 +431,122 @@ a {
   line-height: 1.35;
 }
 
+.notes-main {
+  width: min(900px, calc(100% - 48px));
+}
+
+.notes-header {
+  padding: clamp(72px, 10vw, 128px) 0 54px;
+  border-bottom: 1px solid var(--line);
+}
+
+.notes-kicker {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.notes-header h1 {
+  max-width: 720px;
+  margin: 0;
+  font-family: Georgia, "Noto Serif", "Songti SC", serif;
+  font-size: clamp(44px, 7vw, 72px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.notes-intro {
+  max-width: 620px;
+  margin: 25px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.notes-list {
+  border-bottom: 1px solid var(--line);
+}
+
+.note-row a {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+  gap: 30px;
+  align-items: start;
+  padding: 38px 0 42px;
+  text-decoration: none;
+}
+
+.note-row a:hover h2 {
+  color: var(--accent);
+}
+
+.note-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.note-meta span {
+  color: var(--accent);
+  font-weight: 720;
+}
+
+.note-copy h2 {
+  margin: 0 0 10px;
+  font-family: Georgia, "Noto Serif", "Songti SC", serif;
+  font-size: clamp(24px, 3vw, 31px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+  transition: color 150ms ease;
+}
+
+.note-copy p {
+  max-width: 640px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.note-arrow {
+  padding-top: 3px;
+  color: var(--muted);
+  font-size: 22px;
+}
+
+.writing-next {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 30px;
+  padding: 34px 0 64px;
+}
+
+.writing-next h2,
+.writing-next p {
+  margin: 0;
+}
+
+.writing-next h2 {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.writing-next p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 @media (max-width: 820px) {
   .blog-hero,
   .featured,
@@ -483,5 +599,24 @@ a {
   .blog-footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .notes-main {
+    width: min(100% - 30px, 900px);
+  }
+
+  .note-row a,
+  .writing-next {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .note-meta {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .note-arrow {
+    display: none;
   }
 }
